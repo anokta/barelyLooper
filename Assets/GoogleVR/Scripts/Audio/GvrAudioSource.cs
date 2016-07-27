@@ -212,6 +212,7 @@ public class GvrAudioSource : MonoBehaviour {
     audioSource.playOnAwake = false;
     audioSource.bypassReverbZones = true;
     audioSource.spatialBlend = 0.0f;
+    audioSource.dopplerLevel = 0.0f;
     OnValidate();
     // Route the source output to |GvrAudioMixer|.
     AudioMixer mixer = (Resources.Load("GvrAudioMixer") as AudioMixer);

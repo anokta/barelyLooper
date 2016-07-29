@@ -310,6 +310,15 @@ public class GvrAudioSource : MonoBehaviour {
     }
   }
 
+  /// Plays the clip at a specific time on the absolute time-line that AudioSettings.dspTime refers
+  /// to for when the sound should start playing.
+  public void PlayScheduled (double time) {
+    if (audioSource != null && InitializeSource()) {
+      audioSource.PlayScheduled(time);
+      isPaused = false;
+    }
+  }
+
   /// Stops playing the clip.
   public void Stop () {
     if (audioSource != null) {

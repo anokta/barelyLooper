@@ -11,9 +11,6 @@ public class Metronome : MonoBehaviour {
   // Audio clips for metronome clicks.
   public AudioClip clickAccent, clickDefault;
 
-  private AudioClip currentClip = null;
-  private bool nextBeatTriggered = false;
-
   void OnEnable () {
     sequencer.OnNextBeat += OnNextBeat;
   }
@@ -22,21 +19,12 @@ public class Metronome : MonoBehaviour {
     sequencer.OnNextBeat -= OnNextBeat;
   }
 
-  // Update is called once per frame
-  void Update () {
-    if (nextBeatTriggered) {
-      nextBeatTriggered = false;
-      source.clip = currentClip;
-      source.Play();
-    }
-  }
-
-  void OnNextBeat (int beat) {
-    nextBeatTriggered = true;
+  void OnNextBeat (int bar, int beat, double dspTime) {
     if (beat == 0) {
-      currentClip = clickAccent;
+      source.clip = clickAccent;
     } else {
-      currentClip = clickDefault;
+      source.clip = clickDefault;
     }
+    source.PlayScheduled(dspTime);
   }
 }

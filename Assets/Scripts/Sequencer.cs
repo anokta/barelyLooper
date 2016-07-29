@@ -7,130 +7,92 @@
 using UnityEngine;
 using System.Collections;
 
-// Step sequencer that sends signals in each bar and beat respectively.
+// Step sequencer that sends signals in each beat.
 // Adopted from BarelyAPI.Sequencer of barelyMusician (https://github.com/anokta/barelyMusician).
 public class Sequencer : MonoBehaviour {
   // Sequencer event dispatcher.
-  public delegate void SequencerEvent(int state);
+  public delegate void SequencerEvent(int bar, int beat, double dspTime);
 
   // Sequencer callbacks per each audio event.
-  public event SequencerEvent OnNextBar, OnNextBeat;
+  public event SequencerEvent OnNextBeat;
 
-  // Common note length types.
-  public enum NoteType {
-    WholeNote = 1,
-    HalfNote = 2,
-    QuarterNote = 4,
-    EightNote = 8,
-    SixteenthNote = 16
-  }
+  // Bar length in samples.
+  [HideInInspector]
+  public double barLength = 0.0;
 
-  // Beats per minute.
-  public int tempo = 120;
+  // Initial tempo of the sequencer, will only be used during initial setup (to be overwritten).
+  [Range(72, 220)]
+  public double initialTempo = 120.0;
 
   // Bars per section.
+  [Range(1, 16)]
   public int numBars = 4;
 
   // Beats per bar.
+  [Range(1, 32)]
   public int numBeats = 4;
-
-  // Clock frequency per bar.
-  public int numPulsesInBar = 64;
-
-  // Note length type.
-  public NoteType noteType = NoteType.QuarterNote;
-
-  // System sampling rate.
-  private int sampleRate = 44100;
-
-  // Source that provides the audio callback.
-  private AudioSource audioSource = null;
 
   // Current state of the sequencer.
   private int currentBar = -1;
   private int currentBeat = -1;
-  private int currentPulse = -1;
 
-  // Granular counter to determine the current state.
-  private float phasor = 0;
+  // Is sequencer playing?
+  private bool isPlaying = false;
 
-  // Bar length in pulses.
-  private int BarLength {
-    get { return numBeats * BeatLength; }
-  }
+  // Time in samples to determine when the next beat should be triggered.
+  private double nextBeatTime = 0.0;
 
-  // Beat length in pulses.
-  private int BeatLength {
-    get { return numPulsesInBar / (int)noteType; }
-  }
-
-  // Pulse interval.
-  private float PulseInterval {
-    get { return 240.0f * sampleRate / numPulsesInBar / tempo; }
+  // Beat length in samples.
+  private double beatLength {
+    get { return barLength / numBeats; }
   }
 
   void Awake () {
-    sampleRate = AudioSettings.outputSampleRate;
-    audioSource = gameObject.AddComponent<AudioSource>();
-    audioSource.playOnAwake = false;
-    audioSource.hideFlags = HideFlags.HideInInspector | HideFlags.HideAndDontSave;
-    audioSource.bypassListenerEffects = true;
-    audioSource.bypassReverbZones = true;
-    audioSource.spatialBlend = 0.0f;
     Stop();
+    SetTempo(initialTempo);
   }
 
-  public void Play () { 
-    audioSource.Play();
+  void Update () {
+    if (!isPlaying) {
+      // Skip processing if not playing.
+      return;
+    }
+
+    // Get the current dsp time in samples.
+    double currentTime = AudioSettings.dspTime;
+    if (currentTime >= nextBeatTime) {
+      // Trigger next beat.
+      currentBeat = (currentBeat + 1) % numBeats;
+      if (currentBeat == 0) {
+        // Trigger next bar.
+        currentBar = (currentBar + 1) % numBars;
+      }
+      TriggerNextBeat(currentBar, currentBeat, nextBeatTime);
+      // Update the next beat time.
+      nextBeatTime += beatLength;
+    }
   }
 
-  public void Pause () {
-    audioSource.Pause();
+  public void SetTempo (double tempo) {
+    barLength = 240.0 / tempo;
   }
 
-  public void Stop () { 
-    audioSource.Stop();
+  public void Play () {
+    nextBeatTime = AudioSettings.dspTime;
+    isPlaying = true;
+  }
 
+  public void Stop () {  
+    isPlaying = false;
     currentBar = -1;
     currentBeat = -1;
-    currentPulse = -1;
-
-    phasor = PulseInterval;
-  }
-
-  void OnAudioFilterRead (float[] data, int channels) {
-    // Update |phasor| by number of frames in |data|.
-    phasor += data.Length / channels;
-
-    // Trigger next audio events.
-    int numPulses = Mathf.FloorToInt(phasor / PulseInterval);
-    for (int pulse = 0; pulse < numPulses; ++pulse) {
-      currentPulse = (currentPulse + 1) % BarLength;
-      if (currentPulse % BeatLength == 0) {
-        // Next beat.
-        currentBeat = (currentBeat + 1) % numBeats;
-        if (currentBeat == 0) {
-          // Next bar.
-          currentBar = (currentBar + 1) % numBars;
-          TriggerNextBar(currentBar);
-        }
-        TriggerNextBeat(currentBeat);
-      }
-    }
-    phasor -= numPulses * PulseInterval;
-  }
-
-  // Bar callback function.
-  void TriggerNextBar (int bar) {
-    if (OnNextBar != null) {
-      OnNextBar(bar);
-    }
+    nextBeatTime = 0.0;
   }
 
   // Beat callback function.
-  void TriggerNextBeat (int beat) {
+  private void TriggerNextBeat (int bar, int beat, double dspTime) {
     if (OnNextBeat != null) {
-      OnNextBeat(beat);
+      OnNextBeat(bar, beat, dspTime);
     }
   }
 }

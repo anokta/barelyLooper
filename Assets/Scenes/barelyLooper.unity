@@ -400,11 +400,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0c9f42d0ca037640b39ba94184d1f41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tempo: 120
+  barLength: 2
+  initialTempo: 120
   numBars: 4
   numBeats: 4
-  numPulsesInBar: 128
-  noteType: 4
 --- !u!4 &2127026302
 Transform:
   m_ObjectHideFlags: 0

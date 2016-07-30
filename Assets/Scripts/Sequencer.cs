@@ -12,8 +12,6 @@ using System.Collections;
 public class Sequencer : MonoBehaviour {
   // Sequencer event dispatcher.
   public delegate void SequencerEvent(int bar, int beat, double dspTime);
-
-  // Sequencer callbacks per each audio event.
   public event SequencerEvent OnNextBeat;
 
   // Bar length in samples.

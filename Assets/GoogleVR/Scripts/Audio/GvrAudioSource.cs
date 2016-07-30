@@ -212,7 +212,6 @@ public class GvrAudioSource : MonoBehaviour {
     audioSource.playOnAwake = false;
     audioSource.bypassReverbZones = true;
     audioSource.spatialBlend = 0.0f;
-    audioSource.dopplerLevel = 0.0f;
     OnValidate();
     // Route the source output to |GvrAudioMixer|.
     AudioMixer mixer = (Resources.Load("GvrAudioMixer") as AudioMixer);
@@ -310,9 +309,7 @@ public class GvrAudioSource : MonoBehaviour {
     }
   }
 
-  /// Plays the clip at a specific time on the absolute time-line that AudioSettings.dspTime refers
-  /// to for when the sound should start playing.
-  public void PlayScheduled (double time) {
+  public void PlayScheduled(double time) {
     if (audioSource != null && InitializeSource()) {
       audioSource.PlayScheduled(time);
       isPaused = false;

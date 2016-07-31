@@ -13,6 +13,7 @@ GameObject:
   - 23: {fileID: 2388610}
   - 114: {fileID: 11476832}
   - 114: {fileID: 11435628}
+  - 114: {fileID: 11450902}
   m_Layer: 8
   m_Name: Looper
   m_TagString: Untagged
@@ -89,7 +90,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f4eb8e88c33b754eb50dff161bda0db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startTime: 0
+  source: {fileID: 0}
+--- !u!114 &11450902
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 128718}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 363f7f0d17f687d4085ad6f5dc587b8d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  quietColor: {r: 0.26805797, g: 0.49264705, b: 0.26805797, a: 1}
+  loudColor: {r: 0.8455882, g: 0.6382512, b: 0, a: 1}
+  looper: {fileID: 11435628}
 --- !u!114 &11476832
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -110,7 +125,7 @@ MonoBehaviour:
   rolloffMode: 0
   spread: 0
   sourceClip: {fileID: 0}
-  sourceLoop: 0
+  sourceLoop: 1
   sourceMute: 0
   sourcePitch: 1
   sourcePriority: 128

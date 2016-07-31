@@ -43,9 +43,10 @@ public class Recorder : MonoBehaviour {
   // Stops recording and triggers the on finish callback.
   public void StopRecording () {
     if (IsRecording()) {
+      double recordEndTime = AudioSettings.dspTime;
       Microphone.End(null);
       if (onFinishRecord != null) {
-        onFinishRecord(recordStartTime, AudioSettings.dspTime - recordStartTime);
+        onFinishRecord(recordStartTime, recordEndTime - recordStartTime);
       }
       recordStartTime = 0.0;
     } else {

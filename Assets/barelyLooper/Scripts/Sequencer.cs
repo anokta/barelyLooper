@@ -64,8 +64,9 @@ public class Sequencer : MonoBehaviour {
       if (currentBeat == 0) {
         // Trigger next bar.
         currentBar = (currentBar + 1) % numBars;
+        TriggerNextBar(nextBeatTime);
       }
-      TriggerNextBeat(currentBar, currentBeat, nextBeatTime);
+      TriggerNextBeat(nextBeatTime);
       // Update the next beat time.
       nextBeatTime += beatLength;
     }
@@ -75,8 +76,8 @@ public class Sequencer : MonoBehaviour {
     barLength = 240.0 / tempo;
   }
 
-  public void Play () {
-    nextBeatTime = AudioSettings.dspTime;
+  public void Play (double time) {
+    nextBeatTime = time;
     isPlaying = true;
   }
 
@@ -87,10 +88,17 @@ public class Sequencer : MonoBehaviour {
     nextBeatTime = 0.0;
   }
 
-  // Beat callback function.
-  private void TriggerNextBeat (int bar, int beat, double dspTime) {
+  // Bar callback function.
+  private void TriggerNextBar (double dspTime) {
     if (OnNextBeat != null) {
-      OnNextBeat(bar, beat, dspTime);
+      OnNextBeat(currentBar, currentBeat, dspTime);
+    }
+  }
+
+  // Beat callback function.
+  private void TriggerNextBeat (double dspTime) {
+    if (OnNextBeat != null) {
+      OnNextBeat(currentBar, currentBeat, dspTime);
     }
   }
 }

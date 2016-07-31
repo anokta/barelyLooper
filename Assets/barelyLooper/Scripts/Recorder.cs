@@ -6,7 +6,7 @@ public class Recorder : MonoBehaviour {
   public int maxRecordLength = 15;
 
   // Recorder event dispatcher.
-  public delegate void RecorderEvent(double length);
+  public delegate void RecorderEvent(double startTime, double length);
 
   // Callback on finish recording.
   private RecorderEvent onFinishRecord;
@@ -45,7 +45,7 @@ public class Recorder : MonoBehaviour {
     if (IsRecording()) {
       Microphone.End(null);
       if (onFinishRecord != null) {
-        onFinishRecord(AudioSettings.dspTime - recordStartTime);
+        onFinishRecord(recordStartTime, AudioSettings.dspTime - recordStartTime);
       }
       recordStartTime = 0.0;
     } else {

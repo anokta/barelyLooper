@@ -19,6 +19,11 @@ using UnityEngine;
 [AddComponentMenu("GoogleVR/UI/GvrReticle")]
 [RequireComponent(typeof(Renderer))]
 public class GvrReticle : MonoBehaviour, IGvrGazePointer {
+  public delegate void GazeEvent(GameObject target);
+
+  public static GazeEvent OnGazePointerDown, OnGazePointerUp;
+
+
   /// Number of segments making the reticle circle.
   public int reticleSegments = 20;
 
@@ -60,27 +65,31 @@ public class GvrReticle : MonoBehaviour, IGvrGazePointer {
     materialComp = gameObject.GetComponent<Renderer>().material;
   }
 
-  void OnEnable() {
+  void OnEnable () {
     GazeInputModule.gazePointer = this;
   }
 
-  void OnDisable() {
+  void OnDisable () {
     if (GazeInputModule.gazePointer == this) {
       GazeInputModule.gazePointer = null;
     }
   }
 
-  void Update() {
+  void Update () {
+    if (targetObj == null) {
+      reticleInnerAngle = kReticleMinInnerAngle;
+      reticleOuterAngle = kReticleMinOuterAngle;
+    }
     UpdateDiameters();
   }
 
   /// This is called when the 'BaseInputModule' system should be enabled.
-  public void OnGazeEnabled() {
+  public void OnGazeEnabled () {
 
   }
 
   /// This is called when the 'BaseInputModule' system should be disabled.
-  public void OnGazeDisabled() {
+  public void OnGazeDisabled () {
 
   }
 
@@ -90,9 +99,10 @@ public class GvrReticle : MonoBehaviour, IGvrGazePointer {
   /// The camera is the event camera, the target is the object
   /// the user is looking at, and the intersectionPosition is the intersection
   /// point of the ray sent from the camera on the object.
-  public void OnGazeStart(Camera camera, GameObject targetObject, Vector3 intersectionPosition,
-                          bool isInteractive) {
-    SetGazeTarget(intersectionPosition, isInteractive);
+  public void OnGazeStart (Camera camera, GameObject targetObject, Vector3 intersectionPosition,
+                           bool isInteractive) {
+    targetObj = targetObject;
+    SetGazeTarget(intersectionPosition);
   }
 
   /// Called every frame the user is still looking at a valid GameObject. This
@@ -101,9 +111,10 @@ public class GvrReticle : MonoBehaviour, IGvrGazePointer {
   /// The camera is the event camera, the target is the object the user is
   /// looking at, and the intersectionPosition is the intersection point of the
   /// ray sent from the camera on the object.
-  public void OnGazeStay(Camera camera, GameObject targetObject, Vector3 intersectionPosition,
-                         bool isInteractive) {
-    SetGazeTarget(intersectionPosition, isInteractive);
+  public void OnGazeStay (Camera camera, GameObject targetObject, Vector3 intersectionPosition,
+                          bool isInteractive) {
+    targetObj = targetObject;
+    SetGazeTarget(intersectionPosition);
   }
 
   /// Called when the user's look no longer intersects an object previously
@@ -113,25 +124,27 @@ public class GvrReticle : MonoBehaviour, IGvrGazePointer {
   ///
   /// The camera is the event camera and the target is the object the user
   /// previously looked at.
-  public void OnGazeExit(Camera camera, GameObject targetObject) {
-    reticleDistanceInMeters = kReticleDistanceMax;
-    reticleInnerAngle = kReticleMinInnerAngle;
-    reticleOuterAngle = kReticleMinOuterAngle;
+  public void OnGazeExit (Camera camera, GameObject targetObject) {
+    targetObj = null;
   }
 
   /// Called when a trigger event is initiated. This is practically when
   /// the user begins pressing the trigger.
-  public void OnGazeTriggerStart(Camera camera) {
-    // Put your reticle trigger start logic here :)
+  public void OnGazeTriggerStart (Camera camera) {
+    if (OnGazePointerDown != null) {
+      OnGazePointerDown(targetObj);
+    }
   }
 
   /// Called when a trigger event is finished. This is practically when
   /// the user releases the trigger.
-  public void OnGazeTriggerEnd(Camera camera) {
-    // Put your reticle trigger end logic here :)
+  public void OnGazeTriggerEnd (Camera camera) {
+    if (OnGazePointerUp != null) {
+      OnGazePointerUp(targetObj);
+    }
   }
 
-  public void GetPointerRadius(out float innerRadius, out float outerRadius) {
+  public void GetPointerRadius (out float innerRadius, out float outerRadius) {
     float min_inner_angle_radians = Mathf.Deg2Rad * kReticleMinInnerAngle;
     float max_inner_angle_radians = Mathf.Deg2Rad * (kReticleMinInnerAngle + kReticleGrowthAngle);
 
@@ -139,13 +152,13 @@ public class GvrReticle : MonoBehaviour, IGvrGazePointer {
     outerRadius = 2.0f * Mathf.Tan(max_inner_angle_radians);
   }
 
-  private void CreateReticleVertices() {
+  private void CreateReticleVertices () {
     Mesh mesh = new Mesh();
     gameObject.AddComponent<MeshFilter>();
     GetComponent<MeshFilter>().mesh = mesh;
 
     int segments_count = reticleSegments;
-    int vertex_count = (segments_count+1)*2;
+    int vertex_count = (segments_count + 1) * 2;
 
     #region Vertices
 
@@ -167,19 +180,19 @@ public class GvrReticle : MonoBehaviour, IGvrGazePointer {
     #endregion
 
     #region Triangles
-    int indices_count = (segments_count+1)*3*2;
+    int indices_count = (segments_count + 1) * 3 * 2;
     int[] indices = new int[indices_count];
 
     int vert = 0;
     int idx = 0;
     for (int si = 0; si < segments_count; ++si) {
-      indices[idx++] = vert+1;
+      indices[idx++] = vert + 1;
       indices[idx++] = vert;
-      indices[idx++] = vert+2;
+      indices[idx++] = vert + 2;
 
-      indices[idx++] = vert+1;
-      indices[idx++] = vert+2;
-      indices[idx++] = vert+3;
+      indices[idx++] = vert + 1;
+      indices[idx++] = vert + 2;
+      indices[idx++] = vert + 3;
 
       vert += 2;
     }
@@ -191,7 +204,7 @@ public class GvrReticle : MonoBehaviour, IGvrGazePointer {
     mesh.Optimize();
   }
 
-  private void UpdateDiameters() {
+  private void UpdateDiameters () {
     reticleDistanceInMeters =
       Mathf.Clamp(reticleDistanceInMeters, kReticleDistanceMin, kReticleDistanceMax);
 
@@ -219,17 +232,13 @@ public class GvrReticle : MonoBehaviour, IGvrGazePointer {
     materialComp.SetFloat("_DistanceInMeters", reticleDistanceInMeters);
   }
 
-  private void SetGazeTarget(Vector3 target, bool interactive) {
+  private void SetGazeTarget (Vector3 target) {
     Vector3 targetLocalPosition = transform.InverseTransformPoint(target);
 
     reticleDistanceInMeters =
         Mathf.Clamp(targetLocalPosition.z, kReticleDistanceMin, kReticleDistanceMax);
-    if (interactive) {
-      reticleInnerAngle = kReticleMinInnerAngle + kReticleGrowthAngle;
-      reticleOuterAngle = kReticleMinOuterAngle + kReticleGrowthAngle;
-    } else {
-      reticleInnerAngle = kReticleMinInnerAngle;
-      reticleOuterAngle = kReticleMinOuterAngle;
-    }
+    
+    reticleInnerAngle = kReticleMinInnerAngle + kReticleGrowthAngle;
+    reticleOuterAngle = kReticleMinOuterAngle + kReticleGrowthAngle;
   }
 }

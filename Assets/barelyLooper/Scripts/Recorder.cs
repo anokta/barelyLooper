@@ -30,7 +30,7 @@ public class Recorder : MonoBehaviour {
   }
 
   // Starts recording a clip.
-  public void StartRecording (AudioSource source, RecorderEvent onFinishRecordCallback) {
+  public void StartRecording (GvrAudioSource source, RecorderEvent onFinishRecordCallback) {
     if (!IsRecording()) {
       recordStartTime = AudioSettings.dspTime;
       onFinishRecord = onFinishRecordCallback;

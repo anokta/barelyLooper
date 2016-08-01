@@ -47,7 +47,7 @@ public class LooperManager : MonoBehaviour {
         Camera.main.transform.position + Camera.main.transform.rotation * (2.0f * Vector3.forward);
       looperObject.GetComponent<Renderer>().material.color = recordColor;
       loopers.Add(looperObject.GetComponent<Looper>());
-      recorder.StartRecording(looperObject.GetComponent<AudioSource>(), OnFinishRecord);
+      recorder.StartRecording(looperObject.GetComponent<GvrAudioSource>(), OnFinishRecord);
     }
   }
 

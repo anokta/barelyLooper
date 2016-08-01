@@ -152,10 +152,10 @@ MonoBehaviour:
   ceiling: 14
   backWall: 4
   frontWall: 4
-  reflectivity: 1
+  reflectivity: 0.75
   reverbGainDb: 0
   reverbBrightness: -0.5
-  reverbTime: 1
+  reverbTime: 0.75
   size: {x: 1, y: 1, z: 1}
 --- !u!4 &72017276
 Transform:

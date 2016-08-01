@@ -3,7 +3,7 @@ using System.Collections;
 
 public class Looper : MonoBehaviour {
   // Audio source.
-  public AudioSource source;
+  public GvrAudioSource source;
 
   // Loop data in samples.
   private float[] data;
@@ -11,7 +11,7 @@ public class Looper : MonoBehaviour {
   private static int fadeSampleLength = 1024;
 
   void Awake () {
-    source = GetComponent<AudioSource>();
+    source = GetComponent<GvrAudioSource>();
   }
 
   public void TrimAudioClip (double length) {

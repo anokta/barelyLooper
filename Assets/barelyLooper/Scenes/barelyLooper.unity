@@ -1113,7 +1113,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5a8124079bffac439134eec0786f051, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sequencer: {fileID: 2127026301}
   looperPrefab: {fileID: 128718, guid: e4384d047885daf4d88be0d94fe829f3, type: 2}
   recordColor: {r: 1, g: 0, b: 0.14482737, a: 0.703}
 --- !u!114 &2127026304

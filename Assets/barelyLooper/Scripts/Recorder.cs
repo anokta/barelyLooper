@@ -32,10 +32,10 @@ public class Recorder : MonoBehaviour {
   // Starts recording a clip.
   public void StartRecording (GvrAudioSource source, RecorderEvent onFinishRecordCallback) {
     if (!IsRecording()) {
-      recordStartTime = AudioSettings.dspTime;
       onFinishRecord = onFinishRecordCallback;
       source.clip = Microphone.Start(null, false, maxRecordLength, AudioSettings.outputSampleRate);
-      while(!(Microphone.GetPosition(null) > 0));
+      recordStartTime = AudioSettings.dspTime;
+      while (!(Microphone.GetPosition(null) > 0));
     } else {
       Debug.LogWarning("[StartRecording] An audio clip is already being recorded.");
     }

@@ -51,7 +51,7 @@ public class GazeInputModule : BaseInputModule {
   /// Time in seconds between the pointer down and up events sent by a trigger.
   /// Allows time for the UI elements to make their state transitions.
   [HideInInspector]
-  public float clickTime = 0.1f;  // Based on default time for a button to animate to Pressed.
+  public float clickTime = 0.0f;  // Based on default time for a button to animate to Pressed.
 
   /// The pixel through which to cast rays, in viewport coordinates.  Generally, the center
   /// pixel is best, assuming a monoscopic camera is selected as the `Canvas`' event camera.

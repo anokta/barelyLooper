@@ -13,6 +13,9 @@ public class LooperManager : MonoBehaviour {
   // Looper instances.
   private List<Looper> loopers;
 
+  // Currently selected looper.
+  private Looper currentLooper;
+
   // Mic recorder.
   private Recorder recorder;
 
@@ -25,53 +28,44 @@ public class LooperManager : MonoBehaviour {
   }
 
   void OnEnable () {
-    GvrReticle.OnGazePointerDown += OnTouchDown;
-    GvrReticle.OnGazePointerUp += OnTouchUp;
-    //sequencer.OnNextBeat += OnNextBeat;
+    GvrReticle.OnGazePointerDown += OnGazePointerDown;
+    GvrReticle.OnGazePointerUp += OnGazePointerUp;
   }
 
   void OnDisable () {
-    GvrReticle.OnGazePointerDown -= OnTouchDown;
-    GvrReticle.OnGazePointerUp -= OnTouchUp;
-    //sequencer.OnNextBeat -= OnNextBeat;
+    GvrReticle.OnGazePointerDown -= OnGazePointerDown;
+    GvrReticle.OnGazePointerUp -= OnGazePointerUp;
   }
 
-  private void OnTouchDown (GameObject targetObject) {
-    if (targetObject != null) {
-      //Looper selectedLooper = EventSystem.current.currentSelectedGameObject.GetComponent<Looper>();
-      // Drag & drop .....
-    } else if (!recorder.IsRecording()) {
+  private void OnGazePointerDown (GameObject targetObject) {
+    if (targetObject == null && !recorder.IsRecording()) {
       // Start recording.
-      GameObject looperObject = GameObject.Instantiate(looperPrefab);
-      looperObject.transform.position = 
-        Camera.main.transform.position + Camera.main.transform.rotation * (2.0f * Vector3.forward);
-      looperObject.GetComponent<Renderer>().material.color = recordColor;
-      loopers.Add(looperObject.GetComponent<Looper>());
-      recorder.StartRecording(looperObject.GetComponent<GvrAudioSource>(), OnFinishRecord);
+      currentLooper = GameObject.Instantiate(looperPrefab).GetComponent<Looper>();
+      currentLooper.SetTransform(Camera.main.transform, Vector3.zero);
+      loopers.Add(currentLooper);
+      recorder.StartRecording(currentLooper.source, OnFinishRecord);
     }
   }
 
-  private void OnTouchUp (GameObject targetObject) {
+  private void OnGazePointerUp (GameObject targetObject) {
     if (recorder.IsRecording()) {
+      // Stop recording.
       recorder.StopRecording();
-    } else if (targetObject != null) {
-      loopers.Remove(targetObject.GetComponent<Looper>());
-      GameObject.Destroy(targetObject);
-    } 
+    }
   }
 
   private void OnFinishRecord (double startTime, double length) {
     if (loopers.Count == 1) {
       playbackStartTime = startTime;
       playbackLength = length;
-      loopers[0].source.timeSamples = 
-        (int)(loopers[0].source.clip.frequency * ((AudioSettings.dspTime - length) - startTime));
+      currentLooper.source.timeSamples = 
+        (int)(currentLooper.source.clip.frequency * ((AudioSettings.dspTime - length) - startTime));
     }
-    loopers[loopers.Count - 1].TrimAudioClip(playbackLength);
+    currentLooper.TrimAudioClip(playbackLength);
 
     int playbackOffset = loopers[0].source.timeSamples;
     double startOffset = startTime - playbackStartTime;
     startOffset -= playbackLength * System.Math.Floor(startOffset / playbackLength);
-    loopers[loopers.Count - 1].StartPlayback(startOffset, playbackOffset);
+    currentLooper.StartPlayback(startOffset, playbackOffset);
   }
 }

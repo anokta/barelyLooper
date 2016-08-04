@@ -19,10 +19,9 @@ using UnityEngine;
 [AddComponentMenu("GoogleVR/UI/GvrReticle")]
 [RequireComponent(typeof(Renderer))]
 public class GvrReticle : MonoBehaviour, IGvrGazePointer {
-  public delegate void GazeEvent(GameObject target);
-
+  // Touch event dispatcher.
+  public delegate void GazeEvent(GameObject targetObject);
   public static GazeEvent OnGazePointerDown, OnGazePointerUp;
-
 
   /// Number of segments making the reticle circle.
   public int reticleSegments = 20;
@@ -76,7 +75,7 @@ public class GvrReticle : MonoBehaviour, IGvrGazePointer {
   }
 
   void Update () {
-    if (targetObj == null) {
+    if(targetObj == null) {
       reticleInnerAngle = kReticleMinInnerAngle;
       reticleOuterAngle = kReticleMinOuterAngle;
     }
@@ -113,7 +112,6 @@ public class GvrReticle : MonoBehaviour, IGvrGazePointer {
   /// ray sent from the camera on the object.
   public void OnGazeStay (Camera camera, GameObject targetObject, Vector3 intersectionPosition,
                           bool isInteractive) {
-    targetObj = targetObject;
     SetGazeTarget(intersectionPosition);
   }
 

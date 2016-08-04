@@ -2,7 +2,7 @@
 using System.Collections;
 
 public class LoopVisualizer : MonoBehaviour {
-
+  public Color recordColor = Color.red;
   public Color quietColor = Color.green;
   public Color loudColor = Color.yellow;
 
@@ -10,7 +10,8 @@ public class LoopVisualizer : MonoBehaviour {
 
   private Color currentColor, targetColor;
 
-  void Awake() {
+  void Awake () {
+    looper.gameObject.GetComponent<Renderer>().material.color = recordColor;
     currentColor = quietColor;
     targetColor = currentColor;
   }
@@ -28,7 +29,8 @@ public class LoopVisualizer : MonoBehaviour {
       }
 
       targetColor = quietColor * (1.0f - energy) + loudColor * energy;
-      currentColor = Color.Lerp(currentColor, targetColor , 10.0f * Time.deltaTime);
+      targetColor.a = 1.0f;
+      currentColor = Color.Lerp(currentColor, targetColor, 10.0f * Time.deltaTime);
       looper.gameObject.GetComponent<Renderer>().material.color = currentColor;
     }
   }

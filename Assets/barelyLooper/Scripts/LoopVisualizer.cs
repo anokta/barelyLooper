@@ -16,7 +16,6 @@ public class LoopVisualizer : MonoBehaviour {
     targetColor = currentColor;
   }
 
-  // Update is called once per frame
   void Update () {
     float[] data = looper.GetAudioData();
     if (data != null) {
@@ -27,9 +26,9 @@ public class LoopVisualizer : MonoBehaviour {
       for (int i = 0; i < length; ++i) {
         energy += Mathf.Pow(data[(offset + i) % data.Length], 2.0f);
       }
+      energy = Mathf.Min(energy, 2.0f);
 
       targetColor = quietColor * (1.0f - energy) + loudColor * energy;
-      targetColor.a = 1.0f;
       currentColor = Color.Lerp(currentColor, targetColor, 10.0f * Time.deltaTime);
       looper.gameObject.GetComponent<Renderer>().material.color = currentColor;
     }

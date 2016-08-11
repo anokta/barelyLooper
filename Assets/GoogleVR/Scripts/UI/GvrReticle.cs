@@ -21,7 +21,7 @@ using UnityEngine;
 public class GvrReticle : MonoBehaviour, IGvrGazePointer {
   // Touch event dispatcher.
   public delegate void GazeEvent(GameObject targetObject);
-  public static GazeEvent OnGazePointerDown, OnGazePointerUp;
+  public GazeEvent OnGazePointerDown, OnGazePointerUp;
 
   /// Number of segments making the reticle circle.
   public int reticleSegments = 20;

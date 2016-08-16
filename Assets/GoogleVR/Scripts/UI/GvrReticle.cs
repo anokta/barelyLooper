@@ -21,6 +21,7 @@ using UnityEngine;
 public class GvrReticle : MonoBehaviour, IGvrGazePointer {
   // Touch event dispatcher.
   public delegate void GazeEvent(GameObject targetObject);
+
   public GazeEvent OnGazePointerDown, OnGazePointerUp;
 
   /// Number of segments making the reticle circle.
@@ -75,7 +76,8 @@ public class GvrReticle : MonoBehaviour, IGvrGazePointer {
   }
 
   void Update () {
-    if(targetObj == null) {
+    if (targetObj == null) {
+      reticleDistanceInMeters = kReticleDistanceMax;
       reticleInnerAngle = kReticleMinInnerAngle;
       reticleOuterAngle = kReticleMinOuterAngle;
     }
@@ -99,7 +101,7 @@ public class GvrReticle : MonoBehaviour, IGvrGazePointer {
   /// the user is looking at, and the intersectionPosition is the intersection
   /// point of the ray sent from the camera on the object.
   public void OnGazeStart (Camera camera, GameObject targetObject, Vector3 intersectionPosition,
-                           bool isInteractive) {
+                          bool isInteractive) {
     targetObj = targetObject;
     SetGazeTarget(intersectionPosition);
   }
@@ -111,7 +113,7 @@ public class GvrReticle : MonoBehaviour, IGvrGazePointer {
   /// looking at, and the intersectionPosition is the intersection point of the
   /// ray sent from the camera on the object.
   public void OnGazeStay (Camera camera, GameObject targetObject, Vector3 intersectionPosition,
-                          bool isInteractive) {
+                         bool isInteractive) {
     SetGazeTarget(intersectionPosition);
   }
 
@@ -234,8 +236,8 @@ public class GvrReticle : MonoBehaviour, IGvrGazePointer {
     Vector3 targetLocalPosition = transform.InverseTransformPoint(target);
 
     reticleDistanceInMeters =
-        Mathf.Clamp(targetLocalPosition.z, kReticleDistanceMin, kReticleDistanceMax);
-    
+      Mathf.Clamp(targetLocalPosition.z, kReticleDistanceMin, kReticleDistanceMax);
+
     reticleInnerAngle = kReticleMinInnerAngle + kReticleGrowthAngle;
     reticleOuterAngle = kReticleMinOuterAngle + kReticleGrowthAngle;
   }

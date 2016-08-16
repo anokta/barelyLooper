@@ -13,6 +13,9 @@ public class LooperManager : MonoBehaviour {
   // Reticle to handle gaze based user input.
   public GvrReticle reticle;
 
+  // Step sequencer.
+  public Sequencer sequencer;
+
   // Looper instances.
   private List<Looper> loopers;
 
@@ -77,6 +80,9 @@ public class LooperManager : MonoBehaviour {
   private void OnFinishRecord (double startTime, double length, int frequency, float[] data) {
     if (loopers.Count == 1) {  // playback hasn't started yet
       playbackLength = length;
+
+      sequencer.barLength = length;
+      sequencer.Play(startTime + length - recorder.RecordLatency);
     }
     // Set the audio clip.
     currentLooper.SetAudioClip(data, playbackLength, frequency);

@@ -296,6 +296,13 @@ public class GvrAudioSource : MonoBehaviour {
     }
   }
 
+  public void PlayScheduled(double time) {
+    if (audioSource != null && InitializeSource()) {
+      audioSource.PlayScheduled(time);
+      isPaused = false;
+    }
+  }
+
   /// Plays an AudioClip.
   public void PlayOneShot (AudioClip clip) {
     PlayOneShot(clip, 1.0f);
@@ -305,13 +312,6 @@ public class GvrAudioSource : MonoBehaviour {
   public void PlayOneShot (AudioClip clip, float volume) {
     if (audioSource != null && InitializeSource()) {
       audioSource.PlayOneShot(clip, volume);
-      isPaused = false;
-    }
-  }
-
-  public void PlayScheduled(double time) {
-    if (audioSource != null && InitializeSource()) {
-      audioSource.PlayScheduled(time);
       isPaused = false;
     }
   }

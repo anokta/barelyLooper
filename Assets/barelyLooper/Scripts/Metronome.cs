@@ -25,13 +25,6 @@ public class Metronome : MonoBehaviour {
     } else {
       source.clip = clickDefault;
     }
-    if (AudioSettings.dspTime > dspTime) {
-      double currentTime = AudioSettings.dspTime;
-      int timeSamples = (int)((currentTime - dspTime) * source.clip.frequency);
-      source.timeSamples = timeSamples % source.clip.samples;
-      source.PlayScheduled(currentTime);
-    } else {
-      source.PlayScheduled(dspTime);
-    }
+    source.PlayScheduled(dspTime);
   }
 }

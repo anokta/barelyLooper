@@ -8,7 +8,12 @@ public class MetronomeVisualizer : MonoBehaviour {
   // Colors for metronome clicks.
   public Color blinkColor, fadeColor;
 
-  public GameObject[] walls;
+  public GameObject parentObject;
+  private Renderer[] children;
+
+  void Awake() {
+    children = parentObject.GetComponentsInChildren<Renderer>();
+  }
 
   void OnEnable () {
     sequencer.OnNextBeat += OnNextBeat;
@@ -19,14 +24,15 @@ public class MetronomeVisualizer : MonoBehaviour {
   }
 
   void Update () {
-    for (int i = 0; i < walls.Length; ++i) {
-      Color currentColor = walls[i].GetComponent<Renderer>().material.color;
-      walls[i].GetComponent<Renderer>().material.color = Color.Lerp(currentColor, fadeColor,
-                                                                    2 * Time.deltaTime);
+    for (int i = 0; i < children.Length; ++i) {
+      Color currentColor = children[i].material.color;
+      children[i].material.color = Color.Lerp(currentColor, fadeColor, 2 * Time.deltaTime);
     }
   }
 
   void OnNextBeat (int bar, int beat, double dspTime) {
-    walls[beat % walls.Length].GetComponent<Renderer>().material.color = blinkColor;
+    for (int i = 0; i < children.Length; ++i) {
+      children[i].material.color = blinkColor;
+    }
   }
 }

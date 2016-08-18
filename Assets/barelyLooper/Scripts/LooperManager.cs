@@ -7,14 +7,14 @@ public class LooperManager : MonoBehaviour {
   // Prefab object to instantiate loopers.
   public GameObject looperPrefab;
 
+  // Prefab object to instantiate a record indicator object.
+  public GameObject recorderPrefab;
+
   // Mic recorder.
   public Recorder recorder;
 
   // Reticle to handle gaze based user input.
   public GvrReticle reticle;
-
-  // Step sequencer.
-  public Sequencer sequencer;
 
   // Looper instances.
   private List<Looper> loopers;
@@ -22,12 +22,17 @@ public class LooperManager : MonoBehaviour {
   // Currently selected looper.
   private Looper currentLooper;
 
+  // Record indicator.
+  private RecordVisualizer recordVisualizer;
+
   // Playback length in seconds.
   private double playbackLength;
 
   void Awake () {
     loopers = new List<Looper>();
     currentLooper = null;
+    recordVisualizer = GameObject.Instantiate(recorderPrefab).GetComponent<RecordVisualizer>();
+    recordVisualizer.Deactivate();
 
     playbackLength = 0.0;
   }
@@ -47,8 +52,9 @@ public class LooperManager : MonoBehaviour {
   // Creates a new looper with respect to the |camera|.
   public Looper CreateLooper (Transform camera) {
     Looper looper = GameObject.Instantiate(looperPrefab).GetComponent<Looper>();
+    looper.gameObject.SetActive(false);
     looper.looperManager = this;
-    looper.SetTransform(Camera.main.transform, Vector3.zero);
+    looper.SetTransform(camera, Vector3.zero);
     loopers.Add(looper);
     return looper;
   }
@@ -64,6 +70,8 @@ public class LooperManager : MonoBehaviour {
     if (targetObject == null && !recorder.IsRecording) {
       // Start recording.
       recorder.StartRecording();
+      recordVisualizer.SetTransform(Camera.main.transform);
+      recordVisualizer.Activate();
       currentLooper = CreateLooper(Camera.main.transform);
     }
   }
@@ -73,22 +81,21 @@ public class LooperManager : MonoBehaviour {
     if (recorder.IsRecording) {
       // Stop recording.
       recorder.StopRecording();
+      recordVisualizer.Deactivate();
     }
   }
 
   // Implements |Recorder.OnFinishRecord| callback.
   private void OnFinishRecord (double startTime, double length, int frequency, float[] data) {
-    if (loopers.Count == 1) {  // playback hasn't started yet
+    if (loopers.Count == 1) {
       playbackLength = length;
-
-      sequencer.barLength = length;
-      sequencer.Play(startTime + length - recorder.RecordLatency);
     }
     // Set the audio clip.
     currentLooper.SetAudioClip(data, playbackLength, frequency);
     // Start the playback.
     double dspTime = AudioSettings.dspTime;
     int playbackOffsetSamples = (int)(frequency * (dspTime - (startTime - recorder.RecordLatency)));
+    currentLooper.gameObject.SetActive(true);
     currentLooper.StartPlayback(dspTime, playbackOffsetSamples);
   }
 }

@@ -5,15 +5,8 @@ using System.Collections;
 public class Sequencer : MonoBehaviour {
   // Sequencer event dispatcher.
   public delegate void SequencerEvent(int bar, int beat, double dspTime);
+
   public event SequencerEvent OnNextBeat;
-
-  // Bar length in samples.
-  [HideInInspector]
-  public double barLength = 0.0;
-
-  // Initial tempo of the sequencer, will only be used during initial setup (to be overwritten).
-  [Range(72, 220)]
-  public double initialTempo = 120;
 
   // Bars per section.
   [Range(1, 16)]
@@ -23,45 +16,60 @@ public class Sequencer : MonoBehaviour {
   [Range(1, 32)]
   public int numBeats = 4;
 
+  public bool IsPlaying {
+    get { return (updateCoroutine != null); }
+  }
+
+  // Coroutine to update the sequencer state.
   private IEnumerator updateCoroutine;
 
   // Current state of the sequencer.
-  private int currentBar = -1;
-  private int currentBeat = -1;
+  private int currentBar;
+  private int currentBeat;
+
+  // Bar length in seconds.
+  private double barLength;
 
   // Beat length in samples.
-  private double beatLengthSeconds {
+  private double beatLength {
     get { return barLength / numBeats; }
   }
 
   void Awake () {
-    Stop();
-    SetTempo(initialTempo);
+    currentBar = -1;
+    currentBeat = -1;
+    barLength = 0.0;
   }
 
-  public void SetTempo (double tempo) {
-    barLength = 240.0 / tempo;
-  }
-
-  public void Play (double time) {
-    if (updateCoroutine == null) {
-      updateCoroutine = SequencerUpdateLoop(time);
+  // Starts the sequencer playback.
+  public void Play (double startTime, double barLengthSeconds) {
+    if (!IsPlaying) {
+      barLength = barLengthSeconds;
+      updateCoroutine = UpdateLoop(startTime);
       StartCoroutine(updateCoroutine);
     }
   }
 
+  // Stops the sequencer playback.
   public void Stop () {  
-    if (updateCoroutine != null) {
+    if (IsPlaying) {
       StopCoroutine(updateCoroutine);
       updateCoroutine = null;
+      currentBar = -1;
+      currentBeat = -1;
     }
-    currentBar = -1;
-    currentBeat = -1;
   }
 
-  private IEnumerator SequencerUpdateLoop (double dspTime) {
-    while (true) {
-      yield return new WaitUntilDspTime(dspTime);
+  // Sets the tempo (bpm).
+  public void SetTempo (double tempo) {
+    barLength = 240.0 / tempo;
+  }
+
+  // Sequencer update coroutine.
+  private IEnumerator UpdateLoop (double dspTime) {
+    while (IsPlaying) {
+      // Wait till next beat.
+      yield return new WaitWhile(() => AudioSettings.dspTime < dspTime);
 
       // Next beat.
       currentBeat = (currentBeat + 1) % numBeats;
@@ -74,21 +82,8 @@ public class Sequencer : MonoBehaviour {
         OnNextBeat(currentBar, currentBeat, dspTime);
       }
 
-      dspTime += beatLengthSeconds;
-    }
-  }
-
-  // Custom yield instruction to wait until given dsp time in seconds has been reached.
-  private class WaitUntilDspTime : CustomYieldInstruction {
-    // Target dsp time in seconds.
-    private double dspTime;
-
-    public override bool keepWaiting {
-      get { return AudioSettings.dspTime < dspTime; }
-    }
-
-    public WaitUntilDspTime(double time) {
-      dspTime = time;
+      // Update next beat time.
+      dspTime += beatLength;
     }
   }
 }

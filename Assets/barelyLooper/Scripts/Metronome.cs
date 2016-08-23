@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+// Basic metronome that ticks in each sequenced beat of a bar.
 public class Metronome : MonoBehaviour {
   // Sequencer.
   public Sequencer sequencer;
@@ -19,6 +20,7 @@ public class Metronome : MonoBehaviour {
     sequencer.OnNextBeat -= OnNextBeat;
   }
 
+  // Implements |Sequencer.OnNextBeat| callback.
   void OnNextBeat (int bar, int beat, double dspTime) {
     if (beat == 0) {
       source.clip = clickAccent;

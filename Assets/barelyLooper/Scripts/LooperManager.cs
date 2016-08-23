@@ -17,24 +17,28 @@ public class LooperManager : MonoBehaviour {
   public GvrReticle reticle;
 
   // Looper instances.
-  private List<Looper> loopers;
+  private List<LoopController> loopers;
 
   // Currently selected looper.
-  private Looper currentLooper;
+  private LoopController currentLooper;
 
   // Record indicator.
-  private RecordVisualizer recordVisualizer;
+  private RecordController recordVisualizer;
 
   // Playback length in seconds.
   private double playbackLength;
 
+  // Is recording fixed length?
+  private bool fixedLength;
+
   void Awake () {
-    loopers = new List<Looper>();
+    loopers = new List<LoopController>();
     currentLooper = null;
-    recordVisualizer = GameObject.Instantiate(recorderPrefab).GetComponent<RecordVisualizer>();
+    recordVisualizer = GameObject.Instantiate(recorderPrefab).GetComponent<RecordController>();
     recordVisualizer.Deactivate();
 
     playbackLength = 0.0;
+    fixedLength = true;
   }
 
   void OnEnable () {
@@ -50,8 +54,8 @@ public class LooperManager : MonoBehaviour {
   }
 
   // Creates a new looper with respect to the |camera|.
-  public Looper CreateLooper (Transform camera) {
-    Looper looper = GameObject.Instantiate(looperPrefab).GetComponent<Looper>();
+  public LoopController CreateLooper (Transform camera) {
+    LoopController looper = GameObject.Instantiate(looperPrefab).GetComponent<LoopController>();
     looper.gameObject.SetActive(false);
     looper.looperManager = this;
     looper.SetTransform(camera, Vector3.zero);
@@ -60,9 +64,22 @@ public class LooperManager : MonoBehaviour {
   }
 
   // Destroys the game object of given |looper|.
-  public void DestroyLooper (Looper looper) {
+  public void DestroyLooper (LoopController looper) {
     loopers.Remove(looper);
     GameObject.Destroy(looper.gameObject);
+  }
+
+  // Toggles fixed length recording.
+  public void ToggleFixedLength () {
+    fixedLength = !fixedLength;
+  }
+
+  public void DoubleLength () {
+    playbackLength *= 2.0f;
+  }
+
+  public void HalveLength () {
+    playbackLength *= 0.5f;
   }
 
   // Implements |GvrReticle.OnGazePointerDown| callback.
@@ -90,8 +107,10 @@ public class LooperManager : MonoBehaviour {
     if (loopers.Count == 1) {
       playbackLength = length;
     }
+    double loopLength = (fixedLength || length < playbackLength) ?
+      playbackLength : System.Math.Round(length / playbackLength) * playbackLength;
     // Set the audio clip.
-    currentLooper.SetAudioClip(data, playbackLength, frequency);
+    currentLooper.SetAudioClip(data, loopLength, frequency);
     // Start the playback.
     double dspTime = AudioSettings.dspTime;
     int playbackOffsetSamples = (int)(frequency * (dspTime - (startTime - recorder.RecordLatency)));

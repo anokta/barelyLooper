@@ -3,7 +3,7 @@ using UnityEngine.EventSystems;
 using System.Collections;
 
 // Class that controls a looper object.
-public class Looper : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler {
+public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler {
   // Audio source.
   public GvrAudioSource source;
 
@@ -12,6 +12,9 @@ public class Looper : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDr
 
   // Loop data in samples.
   private float[] data;
+
+  // Loop length in samples.
+  private int lengthSamples;
 
   // Object distance to camera.
   private float distance;
@@ -43,7 +46,7 @@ public class Looper : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDr
 
   public void SetAudioClip (float[] originalData, double targetLength, int frequency) {
     // Fill in the loop data.
-    int lengthSamples = (int)(targetLength * frequency);
+    lengthSamples = (int)(targetLength * frequency);
     data = new float[lengthSamples];
     for (int i = 0; i < originalData.Length; ++i) {
       data[i % lengthSamples] = originalData[i];
@@ -63,11 +66,6 @@ public class Looper : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDr
   public void StartPlayback (double startTime, int playbackOffsetSamples) {
     source.timeSamples = playbackOffsetSamples % source.clip.samples;
     source.PlayScheduled(startTime);
-  }
-
-  // Returns raw audio data.
-  public float[] GetAudioData () {
-    return data;
   }
 
   // Implements |IPointerDownHandler.OnPointerDown| callback.

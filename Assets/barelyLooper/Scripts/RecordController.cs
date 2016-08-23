@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class RecordVisualizer : MonoBehaviour {
+public class RecordController : MonoBehaviour {
 
   private float distance;
 

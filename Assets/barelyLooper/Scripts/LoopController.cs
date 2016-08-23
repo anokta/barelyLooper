@@ -22,12 +22,18 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
   // Fade length in samples for each side of the loop.
   private int fadeLengthSamples;
 
+  // Hit look direction.
+  private Vector3 pressDirection;
+
   // Hit offset from the center point.
   private Vector3 pressOffset;
 
-  // Time threshold in seconds until a double-click can be registered.
-  private float validDoubleClickTime;
+  // Hit time in seconds.
+  private float pressTime;
  
+  // Allowed maximum click angle in degrees.
+  private static float clickAngleThreshold = 2.0f;
+
   // Allowed maximum click time in seconds.
   private static float clickTimeThreshold = 0.35f;
 
@@ -70,19 +76,21 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 
   // Implements |IPointerDownHandler.OnPointerDown| callback.
   public void OnPointerDown (PointerEventData eventData) {
-    // Calculate where the trigger was pressed relative to the center of the looper object.
+    pressTime = Time.time;
     Transform camera = eventData.pressEventCamera.transform;
+    pressDirection = camera.forward;
+    // Calculate where the trigger was pressed relative to the center of the looper object.
     Vector3 rotatedOffset = (transform.position - camera.position) - distance * camera.forward;
     pressOffset = Quaternion.Inverse(camera.rotation) * rotatedOffset;
   }
 
   // Implements |IPointerUpHandler.OnPointerUp| callback.
   public void OnPointerUp (PointerEventData eventData) {
-    if (Time.time < validDoubleClickTime) { // double click
+    Transform camera = eventData.pressEventCamera.transform;
+    if (Time.time < pressTime + clickTimeThreshold &&
+        Vector3.Angle(camera.forward, pressDirection) < clickAngleThreshold) {
       // Remove the looper.
       looperManager.DestroyLooper(this);
-    } else {
-      validDoubleClickTime = Time.time + clickTimeThreshold;
     }
   }
 

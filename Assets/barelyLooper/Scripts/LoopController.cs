@@ -45,7 +45,7 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
   }
 
   void Update () { 
-    if(path != null) {
+    if(path != null && path.Length > 0) {
       float progress = path.Length * source.time / source.clip.length;
       int index = Mathf.FloorToInt(progress);
       float t = progress - index;

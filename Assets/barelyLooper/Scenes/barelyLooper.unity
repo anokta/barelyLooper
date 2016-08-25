@@ -323,7 +323,7 @@ MonoBehaviour:
   backWall: 4
   frontWall: 4
   reflectivity: 1
-  reverbGainDb: 0
+  reverbGainDb: -3
   reverbBrightness: -0.25
   reverbTime: 0.75
   size: {x: 1, y: 1, z: 1}

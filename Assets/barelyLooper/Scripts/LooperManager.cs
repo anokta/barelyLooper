@@ -10,6 +10,9 @@ public class LooperManager : MonoBehaviour {
   // Prefab object to instantiate a record indicator object.
   public GameObject recorderPrefab;
 
+  // Path recorder.
+  public PathRecorder pathRecorder;
+
   // Mic recorder.
   public Recorder recorder;
 
@@ -31,6 +34,9 @@ public class LooperManager : MonoBehaviour {
   // Is recording fixed length?
   private bool fixedLength;
 
+  // Should traced path recorded with the loop?
+  private bool recordPath;
+
   void Awake () {
     loopers = new List<LoopController>();
     currentLooper = null;
@@ -39,6 +45,7 @@ public class LooperManager : MonoBehaviour {
 
     playbackLength = 0.0;
     fixedLength = true;
+    recordPath = false;
   }
 
   void OnEnable () {
@@ -51,6 +58,12 @@ public class LooperManager : MonoBehaviour {
     recorder.OnFinishRecord = null;
     reticle.OnGazePointerDown = null;
     reticle.OnGazePointerUp = null;
+  }
+
+  void Update() {
+    if(recordPath && recorder.IsRecording) {
+      recordVisualizer.SetTransform(Camera.main.transform);
+    }
   }
 
   // Creates a new looper with respect to the |camera|.
@@ -74,6 +87,10 @@ public class LooperManager : MonoBehaviour {
     fixedLength = !fixedLength;
   }
 
+  public void ToggleRecordPath () {
+    recordPath = !recordPath;
+  }
+
   public void DoubleLength () {
     playbackLength *= 2.0f;
   }
@@ -89,6 +106,9 @@ public class LooperManager : MonoBehaviour {
       recorder.StartRecording();
       recordVisualizer.SetTransform(Camera.main.transform);
       recordVisualizer.Activate();
+      if(recordPath) {
+        pathRecorder.StartRecording(recordVisualizer.transform, AudioSettings.dspTime);
+      }
       currentLooper = CreateLooper(Camera.main.transform);
     }
   }
@@ -97,7 +117,10 @@ public class LooperManager : MonoBehaviour {
   private void OnGazePointerUp (GameObject targetObject) {
     if (recorder.IsRecording) {
       // Stop recording.
-      recorder.StopRecording();
+      recorder.StopRecording();      
+      if(recordPath) {
+        currentLooper.path = pathRecorder.StopRecording();
+      }
       recordVisualizer.Deactivate();
     }
   }

@@ -13,6 +13,8 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
   // Loop data in samples.
   private float[] data;
 
+  public Vector3[] path;
+
   // Loop length in samples.
   private int lengthSamples;
 
@@ -40,6 +42,17 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
   void Awake () {
     distance = transform.position.z;
     fadeLengthSamples = AudioSettings.GetConfiguration().dspBufferSize;
+  }
+
+  void Update () { 
+    if(path != null) {
+      float progress = path.Length * source.time / source.clip.length;
+      int index = Mathf.FloorToInt(progress);
+      float t = progress - index;
+      transform.position = Vector3.Slerp(path[index%path.Length], path[(index+1)%path.Length], t);
+      Vector3 dir = transform.position - Camera.main.transform.position;
+      transform.rotation = Quaternion.LookRotation(-dir);
+    }
   }
 
   // Sets the transform of the looper to directly face to the |camera| with given |offset|.

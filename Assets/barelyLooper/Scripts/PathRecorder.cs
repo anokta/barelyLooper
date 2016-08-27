@@ -8,32 +8,28 @@ public class PathRecorder : MonoBehaviour {
 
   private Transform targetObject;
 
-  private List<Vector3> path;
+  private Path path;
 
   private bool isRecording;
 
-  void Awake () { 
-    path = new List<Vector3>();
-  }
-
   public void StartRecording(Transform target, double startTime) {
     targetObject = target;
-    path.Clear();
+    path = new Path();
     isRecording = true;
     StartCoroutine(CaptureSamplePoints(startTime));
   }
 
-  public Vector3[] StopRecording() {
+  public Path StopRecording(double stopTime) {
     isRecording = false;
-    path.Add(targetObject.position);
-    return path.ToArray();
+    path.AddKey((float)stopTime, targetObject.position);
+    return path;
   }
 
   private IEnumerator CaptureSamplePoints (double dspTime) {
     while (isRecording) {
       yield return new WaitWhile(() => AudioSettings.dspTime < dspTime);
 
-      path.Add(targetObject.position);
+      path.AddKey((float)dspTime, targetObject.position);
       dspTime += sampleInterval;
     }
   }

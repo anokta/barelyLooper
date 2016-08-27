@@ -13,7 +13,8 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
   // Loop data in samples.
   private float[] data;
 
-  public Vector3[] path;
+  // Recorded looper path to be traced.
+  public Path path;
 
   // Loop length in samples.
   private int lengthSamples;
@@ -45,13 +46,10 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
   }
 
   void Update () { 
-    if(path != null && path.Length > 0) {
-      float progress = path.Length * source.time / source.clip.length;
-      int index = Mathf.FloorToInt(progress);
-      float t = progress - index;
-      transform.position = Vector3.Slerp(path[index%path.Length], path[(index+1)%path.Length], t);
-      Vector3 dir = transform.position - Camera.main.transform.position;
-      transform.rotation = Quaternion.LookRotation(-dir);
+    if (path != null && path.Length > 0) {
+      transform.position = path.Evaluate((float)AudioSettings.dspTime);
+      Vector3 direction = transform.position - Camera.main.transform.position;
+      transform.rotation = Quaternion.LookRotation(-direction);
     }
   }
 

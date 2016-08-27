@@ -60,8 +60,8 @@ public class LooperManager : MonoBehaviour {
     reticle.OnGazePointerUp = null;
   }
 
-  void Update() {
-    if(recordPath && recorder.IsRecording) {
+  void Update () {
+    if (recordPath && recorder.IsRecording) {
       recordVisualizer.SetTransform(Camera.main.transform);
     }
   }
@@ -106,7 +106,7 @@ public class LooperManager : MonoBehaviour {
       recorder.StartRecording();
       recordVisualizer.SetTransform(Camera.main.transform);
       recordVisualizer.Activate();
-      if(recordPath) {
+      if (recordPath) {
         pathRecorder.StartRecording(recordVisualizer.transform, AudioSettings.dspTime);
       }
       currentLooper = CreateLooper(Camera.main.transform);
@@ -118,9 +118,6 @@ public class LooperManager : MonoBehaviour {
     if (recorder.IsRecording) {
       // Stop recording.
       recorder.StopRecording();      
-      if(recordPath) {
-        currentLooper.path = pathRecorder.StopRecording();
-      }
       recordVisualizer.Deactivate();
     }
   }
@@ -139,5 +136,11 @@ public class LooperManager : MonoBehaviour {
     int playbackOffsetSamples = (int)(frequency * (dspTime - (startTime - recorder.RecordLatency)));
     currentLooper.gameObject.SetActive(true);
     currentLooper.StartPlayback(dspTime, playbackOffsetSamples);
+    // Set the loop path.
+    if (recordPath) {
+      currentLooper.path = pathRecorder.StopRecording(startTime + length);
+      currentLooper.path.AddKey((float)(startTime + loopLength), 
+                                currentLooper.path.GetKey(currentLooper.path.Length - 1));
+    }
   }
 }

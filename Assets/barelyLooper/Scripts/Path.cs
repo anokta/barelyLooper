@@ -45,6 +45,13 @@ public class Path {
     return positionCurves[0].keys[index].time;
   }
 
+  // Removes keyframe at given |index|.
+  public void RemoveKey(int index) {
+    positionCurves[0].RemoveKey(index);
+    positionCurves[1].RemoveKey(index);
+    positionCurves[2].RemoveKey(index);
+  }
+
   // Returns the interpolated position at specified |time|.
   public Vector3 Evaluate (float time) {
     return new Vector3(positionCurves[0].Evaluate(time), positionCurves[1].Evaluate(time), 

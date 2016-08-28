@@ -19,6 +19,9 @@ public class LooperManager : MonoBehaviour {
   // Looper instances.
   private List<LoopController> loopers;
 
+  // Root game object to store the looper instances.
+  private GameObject loopersRoot;
+
   // Currently selected looper.
   private LoopController currentLooper;
 
@@ -31,6 +34,9 @@ public class LooperManager : MonoBehaviour {
   // Is recording fixed length?
   private bool fixedLength;
 
+  // Is currently playing?
+  private bool isPlaying;
+
   // Should traced path recorded with the loop?
   public bool recordPath;
 
@@ -40,7 +46,9 @@ public class LooperManager : MonoBehaviour {
     recordVisualizer = GameObject.Instantiate(recorderPrefab).GetComponent<RecordController>();
     recordVisualizer.Deactivate();
 
-    playbackLength = 0.0;
+    Reset();
+
+    isPlaying = true;
     fixedLength = true;
     recordPath = false;
   }
@@ -66,6 +74,7 @@ public class LooperManager : MonoBehaviour {
   // Creates a new looper with respect to the |camera|.
   public LoopController CreateLooper (Transform camera) {
     LoopController looper = GameObject.Instantiate(looperPrefab).GetComponent<LoopController>();
+    looper.transform.parent = loopersRoot.transform;
     looper.GetComponent<Renderer>().enabled = false;
     looper.looperManager = this;
     looper.SetTransform(camera, Vector3.zero);
@@ -77,6 +86,32 @@ public class LooperManager : MonoBehaviour {
   public void DestroyLooper (LoopController looper) {
     loopers.Remove(looper);
     GameObject.Destroy(looper.gameObject);
+  }
+
+  // Clears the scene.
+  public void Reset () {
+    loopers.Clear();
+    if (loopersRoot != null) {
+      Destroy(loopersRoot);
+    }
+    loopersRoot = new GameObject("Loopers");
+    playbackLength = 0.0;
+  }
+
+  // Pauses the playback.
+  public void Pause () {
+    for (int i = 0; i < loopers.Count; ++i) {
+      loopers[i].PausePlayback();
+    }
+    isPlaying = false;
+  }
+
+  // Resumes the playback.
+  public void UnPause () {
+    for (int i = 0; i < loopers.Count; ++i) {
+      loopers[i].UnPausePlayback();
+    }
+    isPlaying = true;
   }
 
   // Toggles fixed length recording.
@@ -98,6 +133,10 @@ public class LooperManager : MonoBehaviour {
 
   // Implements |GvrReticle.OnGazePointerDown| callback.
   private void OnGazePointerDown (GameObject targetObject) {
+    if (!isPlaying) {
+      // Skip processing when paused.
+      return;
+    }
     if (targetObject == null && !recorder.IsRecording) {
       // Start recording.
       recorder.StartRecording();
@@ -113,6 +152,10 @@ public class LooperManager : MonoBehaviour {
 
   // Implements |GvrReticle.OnGazePointerUp| callback.
   private void OnGazePointerUp (GameObject targetObject) {
+    if (!isPlaying) {
+      // Skip processing when paused.
+      return;
+    }
     if (recorder.IsRecording) {
       // Stop recording.
       recorder.StopRecording();      
@@ -132,13 +175,13 @@ public class LooperManager : MonoBehaviour {
     // Start the playback.
     double dspTime = AudioSettings.dspTime;
     int playbackOffsetSamples = (int)(frequency * (dspTime - (startTime - recorder.RecordLatency)));
-    currentLooper.GetComponent<Renderer>().enabled = true;
     currentLooper.StartPlayback(dspTime, playbackOffsetSamples);
     // Set the loop path.
     if (recordPath) {
+      currentLooper.pathRecorder.StopRecording(startTime + length);
       currentLooper.pathRecorder.path.AddKey((float)(startTime + loopLength),
                                              currentLooper.pathRecorder.path.GetKey(0));
-      currentLooper.pathRecorder.StopRecording(startTime + length);
     }
+    currentLooper.GetComponent<Renderer>().enabled = true;
   }
 }

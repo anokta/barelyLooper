@@ -10,11 +10,11 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
   // Looper manager instance.
   public LooperManager looperManager;
 
+  // Recorded looper path to be traced.
+  public PathRecorder pathRecorder;
+
   // Loop data in samples.
   private float[] data;
-
-  // Recorded looper path to be traced.
-  public Path path;
 
   // Loop length in samples.
   private int lengthSamples;
@@ -46,8 +46,8 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
   }
 
   void Update () { 
-    if (path != null && path.Length > 0) {
-      transform.position = path.Evaluate((float)AudioSettings.dspTime);
+    if (pathRecorder.path != null && !pathRecorder.isRecording) {
+      transform.position = pathRecorder.path.Evaluate((float)AudioSettings.dspTime);
       Vector3 direction = transform.position - Camera.main.transform.position;
       transform.rotation = Quaternion.LookRotation(-direction);
     }
@@ -87,6 +87,10 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 
   // Implements |IPointerDownHandler.OnPointerDown| callback.
   public void OnPointerDown (PointerEventData eventData) {
+    if (!looperManager.recordPath) {
+      pathRecorder.path = null;
+    }
+
     pressTime = Time.time;
     Transform camera = eventData.pressEventCamera.transform;
     pressDirection = camera.forward;
@@ -97,6 +101,13 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 
   // Implements |IPointerUpHandler.OnPointerUp| callback.
   public void OnPointerUp (PointerEventData eventData) {
+    if (looperManager.recordPath && pathRecorder.isRecording) {
+      double lengthSeconds = (double)lengthSamples / source.clip.frequency;
+      pathRecorder.path.AddKey((float)(pathRecorder.recordStartTime + lengthSeconds),
+                               pathRecorder.path.GetKey(0));
+      pathRecorder.StopRecording(AudioSettings.dspTime);
+    } 
+
     Transform camera = eventData.pressEventCamera.transform;
     if (Time.time < pressTime + clickTimeThreshold &&
         Vector3.Angle(camera.forward, pressDirection) < clickAngleThreshold) {
@@ -109,5 +120,9 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
   public void OnDrag (PointerEventData eventData) {
     // Drag and drop the looper object.
     SetTransform(eventData.pressEventCamera.transform, pressOffset);
+
+    if (looperManager.recordPath && !pathRecorder.isRecording) {
+      pathRecorder.StartRecording(transform, AudioSettings.dspTime);
+    } 
   }
 }

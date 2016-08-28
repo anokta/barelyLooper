@@ -11,9 +11,10 @@ GameObject:
   - 33: {fileID: 3300920}
   - 65: {fileID: 6598620}
   - 23: {fileID: 2388610}
-  - 114: {fileID: 11435628}
   - 114: {fileID: 11495914}
   - 96: {fileID: 96000012582110142}
+  - 114: {fileID: 11435628}
+  - 114: {fileID: 114000013662328342}
   m_Layer: 8
   m_Name: Looper
   m_TagString: Untagged
@@ -95,7 +96,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   source: {fileID: 11495914}
   looperManager: {fileID: 0}
-  path: []
+  pathRecorder: {fileID: 114000013662328342}
 --- !u!114 &11495914
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -185,3 +186,16 @@ TrailRenderer:
       rgba: 16776960
   m_MinVertexDistance: 0.1
   m_Autodestruct: 0
+--- !u!114 &114000013662328342
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 128718}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7c0aef9c20d2db49842c803738d5ba0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isRecording: 0
+  recordStartTime: 0

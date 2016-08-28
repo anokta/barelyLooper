@@ -6,7 +6,7 @@ public class Path {
   // Number of keyframes in path.
   public int Length {
     get { 
-      if(positionCurves != null && positionCurves.Length > 0) {
+      if (positionCurves != null && positionCurves.Length > 0) {
         return positionCurves[0].length;
       }
       return 0;
@@ -19,7 +19,7 @@ public class Path {
   public Path() {
     // Three curves needed for X, Y & Z coordinates.
     positionCurves = new AnimationCurve[3];
-    for(int i = 0; i < positionCurves.Length; ++i) {
+    for (int i = 0; i < positionCurves.Length; ++i) {
       positionCurves[i] = new AnimationCurve();
       // Loop the path to extend its time frame.
       positionCurves[i].preWrapMode = WrapMode.Loop;
@@ -34,10 +34,15 @@ public class Path {
     positionCurves[2].AddKey(time, position.z);
   }
 
-  // Returns the keyframe at given |time|.
-  public Vector3 GetKey(int index) {
+  // Returns the keyframe at given |index|.
+  public Vector3 GetKey (int index) {
     return new Vector3(positionCurves[0].keys[index].value, positionCurves[1].keys[index].value,
                        positionCurves[2].keys[index].value);
+  }
+
+  // Returns the time at given |index|.
+  public float GetTime (int index) {
+    return positionCurves[0].keys[index].time;
   }
 
   // Returns the interpolated position at specified |time|.

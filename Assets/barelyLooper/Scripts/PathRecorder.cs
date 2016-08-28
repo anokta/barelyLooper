@@ -3,26 +3,27 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class PathRecorder : MonoBehaviour {
+  public Path path;
 
-  public double sampleInterval = 0.125;
+  public bool isRecording;
+
+  public double recordStartTime;
+
+  private static double sampleInterval = 0.2;
 
   private Transform targetObject;
 
-  private Path path;
-
-  private bool isRecording;
-
-  public void StartRecording(Transform target, double startTime) {
+  public void StartRecording (Transform target, double startTime) {
     targetObject = target;
-    path = new Path();
+    recordStartTime = startTime;
     isRecording = true;
+    path = new Path();
     StartCoroutine(CaptureSamplePoints(startTime));
   }
 
-  public Path StopRecording(double stopTime) {
+  public void StopRecording (double stopTime) {
     isRecording = false;
     path.AddKey((float)stopTime, targetObject.position);
-    return path;
   }
 
   private IEnumerator CaptureSamplePoints (double dspTime) {

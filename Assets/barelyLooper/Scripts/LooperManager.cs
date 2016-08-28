@@ -10,9 +10,6 @@ public class LooperManager : MonoBehaviour {
   // Prefab object to instantiate a record indicator object.
   public GameObject recorderPrefab;
 
-  // Path recorder.
-  public PathRecorder pathRecorder;
-
   // Mic recorder.
   public Recorder recorder;
 
@@ -35,7 +32,7 @@ public class LooperManager : MonoBehaviour {
   private bool fixedLength;
 
   // Should traced path recorded with the loop?
-  private bool recordPath;
+  public bool recordPath;
 
   void Awake () {
     loopers = new List<LoopController>();
@@ -69,7 +66,7 @@ public class LooperManager : MonoBehaviour {
   // Creates a new looper with respect to the |camera|.
   public LoopController CreateLooper (Transform camera) {
     LoopController looper = GameObject.Instantiate(looperPrefab).GetComponent<LoopController>();
-    looper.gameObject.SetActive(false);
+    looper.GetComponent<Renderer>().enabled = false;
     looper.looperManager = this;
     looper.SetTransform(camera, Vector3.zero);
     loopers.Add(looper);
@@ -106,10 +103,11 @@ public class LooperManager : MonoBehaviour {
       recorder.StartRecording();
       recordVisualizer.SetTransform(Camera.main.transform);
       recordVisualizer.Activate();
-      if (recordPath) {
-        pathRecorder.StartRecording(recordVisualizer.transform, AudioSettings.dspTime);
-      }
       currentLooper = CreateLooper(Camera.main.transform);
+      if (recordPath) {
+        currentLooper.pathRecorder.StartRecording(recordVisualizer.transform, 
+                                                  AudioSettings.dspTime);
+      }
     }
   }
 
@@ -134,13 +132,13 @@ public class LooperManager : MonoBehaviour {
     // Start the playback.
     double dspTime = AudioSettings.dspTime;
     int playbackOffsetSamples = (int)(frequency * (dspTime - (startTime - recorder.RecordLatency)));
-    currentLooper.gameObject.SetActive(true);
+    currentLooper.GetComponent<Renderer>().enabled = true;
     currentLooper.StartPlayback(dspTime, playbackOffsetSamples);
     // Set the loop path.
     if (recordPath) {
-      currentLooper.path = pathRecorder.StopRecording(startTime + length);
-      currentLooper.path.AddKey((float)(startTime + loopLength), 
-                                currentLooper.path.GetKey(currentLooper.path.Length - 1));
+      currentLooper.pathRecorder.path.AddKey((float)(startTime + loopLength),
+                                             currentLooper.pathRecorder.path.GetKey(0));
+      currentLooper.pathRecorder.StopRecording(startTime + length);
     }
   }
 }

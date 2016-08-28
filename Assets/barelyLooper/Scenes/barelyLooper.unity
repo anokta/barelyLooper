@@ -901,7 +901,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 406456527}
         m_MethodName: DoubleLength
         m_Mode: 1
         m_Arguments:
@@ -1546,7 +1546,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 406456527}
         m_MethodName: HalveLength
         m_Mode: 1
         m_Arguments:
@@ -2253,7 +2253,7 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 406456527}
         m_MethodName: ToggleFixedLength
         m_Mode: 1
         m_Arguments:
@@ -3277,9 +3277,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   looperPrefab: {fileID: 128718, guid: e4384d047885daf4d88be0d94fe829f3, type: 2}
   recorderPrefab: {fileID: 128718, guid: 60aef34a7bf258043b4c36a62cee8534, type: 2}
-  pathRecorder: {fileID: 2127026306}
   recorder: {fileID: 2127026304}
   reticle: {fileID: 314224223}
+  recordPath: 0
 --- !u!114 &2127026304
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3314,4 +3314,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7c0aef9c20d2db49842c803738d5ba0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sampleInterval: 0.125
+  isRecording: 0
+  recordStartTime: 0

@@ -101,7 +101,7 @@ public class GvrReticle : MonoBehaviour, IGvrGazePointer {
   /// the user is looking at, and the intersectionPosition is the intersection
   /// point of the ray sent from the camera on the object.
   public void OnGazeStart (Camera camera, GameObject targetObject, Vector3 intersectionPosition,
-                          bool isInteractive) {
+                           bool isInteractive) {
     targetObj = targetObject;
     SetGazeTarget(intersectionPosition);
   }
@@ -113,7 +113,7 @@ public class GvrReticle : MonoBehaviour, IGvrGazePointer {
   /// looking at, and the intersectionPosition is the intersection point of the
   /// ray sent from the camera on the object.
   public void OnGazeStay (Camera camera, GameObject targetObject, Vector3 intersectionPosition,
-                         bool isInteractive) {
+                          bool isInteractive) {
     SetGazeTarget(intersectionPosition);
   }
 
@@ -223,9 +223,9 @@ public class GvrReticle : MonoBehaviour, IGvrGazePointer {
     float outer_diameter = 2.0f * Mathf.Tan(outer_half_angle_radians);
 
     reticleInnerDiameter =
-        Mathf.Lerp(reticleInnerDiameter, inner_diameter, Time.deltaTime * reticleGrowthSpeed);
+      Mathf.Lerp(reticleInnerDiameter, inner_diameter, Time.deltaTime * reticleGrowthSpeed);
     reticleOuterDiameter =
-        Mathf.Lerp(reticleOuterDiameter, outer_diameter, Time.deltaTime * reticleGrowthSpeed);
+      Mathf.Lerp(reticleOuterDiameter, outer_diameter, Time.deltaTime * reticleGrowthSpeed);
 
     materialComp.SetFloat("_InnerDiameter", reticleInnerDiameter * reticleDistanceInMeters);
     materialComp.SetFloat("_OuterDiameter", reticleOuterDiameter * reticleDistanceInMeters);

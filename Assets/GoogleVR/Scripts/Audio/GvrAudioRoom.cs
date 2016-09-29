@@ -86,6 +86,7 @@ public class GvrAudioRoom : MonoBehaviour {
     surfaceMaterials = new SurfaceMaterial[GvrAudio.numRoomSurfaces];
   }
 
+#if !(UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN)
   void OnEnable () {
     GvrAudio.UpdateAudioRoom(this, GvrAudio.IsListenerInsideRoom(this));
   }
@@ -97,6 +98,7 @@ public class GvrAudioRoom : MonoBehaviour {
   void Update () {
     GvrAudio.UpdateAudioRoom(this, GvrAudio.IsListenerInsideRoom(this));
   }
+#endif
 
   /// Returns a list of surface materials of the room.
   public SurfaceMaterial[] GetSurfaceMaterials () {

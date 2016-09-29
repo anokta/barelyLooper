@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using System.Collections;
 
 public class GuiMenuManager : MonoBehaviour {
+  public Text vrModeText;
   public Text playbackText;
   public Toggle fixedLengthToggle;
   public Button halveLengthButton, doubleLengthButton;
@@ -20,6 +21,11 @@ public class GuiMenuManager : MonoBehaviour {
     }
     reticleColor.a = alpha;
     reticle.GetComponent<Renderer>().material.color = reticleColor;
+  }
+
+  public void ToggleVrMode () {
+    GvrViewer.Instance.VRModeEnabled = !GvrViewer.Instance.VRModeEnabled;
+    vrModeText.text = "VR Mode: " + (GvrViewer.Instance.VRModeEnabled ? "ON" : "OFF");
   }
 
   public void ClearScene () {

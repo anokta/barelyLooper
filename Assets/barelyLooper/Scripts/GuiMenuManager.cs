@@ -21,11 +21,12 @@ public class GuiMenuManager : MonoBehaviour {
     }
     reticleColor.a = alpha;
     reticle.GetComponent<Renderer>().material.color = reticleColor;
+    // Update VR Mode button.
+    vrModeText.text = "VR Mode: " + (GvrViewer.Instance.VRModeEnabled ? "ON" : "OFF");
   }
 
   public void ToggleVrMode () {
     GvrViewer.Instance.VRModeEnabled = !GvrViewer.Instance.VRModeEnabled;
-    vrModeText.text = "VR Mode: " + (GvrViewer.Instance.VRModeEnabled ? "ON" : "OFF");
   }
 
   public void ClearScene () {

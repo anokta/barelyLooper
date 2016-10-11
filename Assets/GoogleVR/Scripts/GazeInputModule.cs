@@ -111,9 +111,9 @@ public class GazeInputModule : BaseInputModule {
 
     bool handlePendingClickRequired =
       !GvrViewer.Instance.Triggered && !Input.GetMouseButton(0);
-#if UNITY_HAS_GOOGLEVR && (UNITY_ANDROID || UNITY_EDITOR)
+    #if UNITY_HAS_GOOGLEVR && (UNITY_ANDROID || UNITY_EDITOR)
     handlePendingClickRequired &= !GvrController.ClickButton;
-#endif  // UNITY_HAS_GOOGLEVR && (UNITY_ANDROID || UNITY_EDITOR)
+    #endif  // UNITY_HAS_GOOGLEVR && (UNITY_ANDROID || UNITY_EDITOR)
 
     // Handle input
     if (!Input.GetMouseButtonDown(0) && Input.GetMouseButton(0)) {
@@ -121,7 +121,7 @@ public class GazeInputModule : BaseInputModule {
     } else if (Time.unscaledTime - pointerData.clickTime < clickTime) {
       // Delay new events until clickTime has passed.
     } else if (!pointerData.eligibleForClick &&
-        (GvrViewer.Instance.Triggered || Input.GetMouseButtonDown(0))) {
+               (GvrViewer.Instance.Triggered || Input.GetMouseButtonDown(0))) {
       // New trigger action.
       HandleTrigger();
     } else if (handlePendingClickRequired) {
@@ -173,7 +173,7 @@ public class GazeInputModule : BaseInputModule {
     GameObject gazeObject = GetCurrentGameObject(); // Get the gaze target
     Vector3 intersectionPosition = GetIntersectionPosition();
     bool isInteractive = pointerData.pointerPress != null ||
-        ExecuteEvents.GetEventHandler<IPointerClickHandler>(gazeObject) != null;
+      ExecuteEvents.GetEventHandler<IPointerClickHandler>(gazeObject) != null;
 
     if (gazeObject == previousGazedObject) {
       if (gazeObject != null) {
@@ -195,7 +195,7 @@ public class GazeInputModule : BaseInputModule {
 
     if (moving && pointerData.pointerDrag != null && !pointerData.dragging) {
       ExecuteEvents.Execute(pointerData.pointerDrag, pointerData,
-          ExecuteEvents.beginDragHandler);
+                            ExecuteEvents.beginDragHandler);
       pointerData.dragging = true;
     }
 
@@ -253,7 +253,7 @@ public class GazeInputModule : BaseInputModule {
     pointerData.pointerPressRaycast = pointerData.pointerCurrentRaycast;
     pointerData.pointerPress =
       ExecuteEvents.ExecuteHierarchy(go, pointerData, ExecuteEvents.pointerDownHandler)
-        ?? ExecuteEvents.GetEventHandler<IPointerClickHandler>(go);
+      ?? ExecuteEvents.GetEventHandler<IPointerClickHandler>(go);
 
     // Save the drag handler as well
     pointerData.pointerDrag = ExecuteEvents.GetEventHandler<IDragHandler>(go);
@@ -324,15 +324,14 @@ public class GazeInputModule : BaseInputModule {
   private Vector2 GetGazePointerPosition() {
     int viewportWidth = Screen.width;
     int viewportHeight = Screen.height;
-#if UNITY_HAS_GOOGLEVR && (UNITY_ANDROID || UNITY_EDITOR) && UNITY_ANDROID
+    #if UNITY_HAS_GOOGLEVR && (UNITY_ANDROID || UNITY_EDITOR) && UNITY_ANDROID
     // GVR native integration is supported.
     if (VRSettings.enabled) {
-      viewportWidth = VRSettings.eyeTextureWidth;
-      viewportHeight = VRSettings.eyeTextureHeight;
+    viewportWidth = VRSettings.eyeTextureWidth;
+    viewportHeight = VRSettings.eyeTextureHeight;
     }
-#endif  // UNITY_HAS_GOOGLEVR && (UNITY_ANDROID || UNITY_EDITOR) && UNITY_ANDROID
+    #endif  // UNITY_HAS_GOOGLEVR && (UNITY_ANDROID || UNITY_EDITOR) && UNITY_ANDROID
 
     return new Vector2(0.5f * viewportWidth, 0.5f * viewportHeight);
   }
 }
-

@@ -25,6 +25,12 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
   // Fade length in samples for each side of the loop.
   private int fadeLengthSamples;
 
+  // Hit transform position.
+  private Vector3 pressPosition;
+
+  // Hit transform rotation.
+  private Quaternion pressRotation;
+
   // Hit look direction.
   private Vector3 pressDirection;
 
@@ -34,7 +40,7 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
   // Hit time in seconds.
   private float pressTime;
 
-  // Playback state when paused..
+  // Playback state when paused.
   private double pauseTime, pauseOffset;
  
   // Allowed maximum click angle in degrees.
@@ -114,6 +120,8 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     pressTime = Time.time;
     Transform camera = eventData.pressEventCamera.transform;
     pressDirection = camera.forward;
+    pressPosition = transform.position;
+    pressRotation = transform.rotation;
     // Calculate where the trigger was pressed relative to the center of the looper object.
     Vector3 rotatedOffset = (transform.position - camera.position) - distance * camera.forward;
     pressOffset = Quaternion.Inverse(camera.rotation) * rotatedOffset;
@@ -127,6 +135,15 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
       pathRecorder.path.AddKey((float)(pathRecorder.recordStartTime + lengthSeconds),
                                pathRecorder.path.GetKey(0));
     } 
+
+    if (pressPosition != null && pressRotation != null) {
+      // Add move command to the manager.
+      looperManager.commandManager.ExecuteCommand(new MoveCommand(this,
+                                                                  pressPosition,
+                                                                  pressRotation,
+                                                                  transform.position,
+                                                                  transform.rotation));
+    }
 
     Transform camera = eventData.pressEventCamera.transform;
     if (Time.time < pressTime + clickTimeThreshold &&

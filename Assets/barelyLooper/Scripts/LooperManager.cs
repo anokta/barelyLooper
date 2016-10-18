@@ -16,6 +16,9 @@ public class LooperManager : MonoBehaviour {
   // Reticle to handle gaze based user input.
   public GvrReticle reticle;
 
+  // Command manager.
+  public CommandManager commandManager;
+
   // Looper instances.
   private List<LoopController> loopers;
 
@@ -45,6 +48,7 @@ public class LooperManager : MonoBehaviour {
     currentLooper = null;
     recordVisualizer = GameObject.Instantiate(recorderPrefab).GetComponent<RecordController>();
     recordVisualizer.Deactivate();
+    commandManager = new CommandManager();
 
     Reset();
 

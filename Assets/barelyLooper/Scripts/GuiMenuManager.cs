@@ -61,4 +61,12 @@ public class GuiMenuManager : MonoBehaviour {
   public void ToggleRecordPath () { 
     loopManager.ToggleRecordPath();
   }
+
+  public void Undo() {
+    loopManager.commandManager.Undo();
+  }
+
+  public void Redo() {
+    loopManager.commandManager.Redo();
+  }
 }

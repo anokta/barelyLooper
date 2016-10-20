@@ -51,7 +51,7 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 
   void Awake () {
     distance = transform.position.z;
-    fadeLengthSamples = AudioSettings.GetConfiguration().dspBufferSize;
+    fadeLengthSamples = 4 * AudioSettings.GetConfiguration().dspBufferSize;
     pauseOffset = 0.0;
   }
 
@@ -81,8 +81,11 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
       data[i % lengthSamples] = originalData[i];
     }
     // Smoothen both ends.
-    for (int i = 0; i < Mathf.Min(fadeLengthSamples, lengthSamples / 2); ++i) {
-      float fade = 1.0f / Mathf.Sqrt(i + 1);
+    // TODO(#28): This is temporary, switch to crossfading for seamless loops.
+    int numFadeSamples = Mathf.Min(fadeLengthSamples, lengthSamples / 2);
+    for (int i = 0; i < numFadeSamples; ++i) {
+      // Half-Hann window.
+      float fade = 0.5f * (1.0f - Mathf.Cos(Mathf.PI * i / numFadeSamples));
       data[i] *= fade;
       data[lengthSamples - i - 1] *= fade;
     }

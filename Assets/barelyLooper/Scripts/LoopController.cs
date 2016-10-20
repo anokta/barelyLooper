@@ -71,11 +71,13 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
                                                  Vector3.Cross(camera.right, direction));
   }
 
-  public void SetAudioClip (float[] originalData, double targetLength, int frequency) {
+  public void SetAudioClip (float[] originalData, double originalLength, double targetLength, 
+                            int frequency) {
     // Fill in the loop data.
+    double originalLengthSamples = (int)(targetLength * frequency);
     lengthSamples = (int)(targetLength * frequency);
     data = new float[lengthSamples];
-    for (int i = 0; i < originalData.Length; ++i) {
+    for (int i = 0; i < originalLengthSamples; ++i) {
       data[i % lengthSamples] = originalData[i];
     }
     // Smoothen both ends.
@@ -136,20 +138,18 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
                                pathRecorder.path.GetKey(0));
     } 
 
-    if (pressPosition != null && pressRotation != null) {
+    Transform camera = eventData.pressEventCamera.transform;
+    if (Time.time < pressTime + clickTimeThreshold &&
+        Vector3.Angle(camera.forward, pressDirection) < clickAngleThreshold) {
+      // Remove the looper.
+      looperManager.DestroyLooper(this);
+    } else { 
       // Add move command to the manager.
       looperManager.commandManager.ExecuteCommand(new MoveCommand(this,
                                                                   pressPosition,
                                                                   pressRotation,
                                                                   transform.position,
                                                                   transform.rotation));
-    }
-
-    Transform camera = eventData.pressEventCamera.transform;
-    if (Time.time < pressTime + clickTimeThreshold &&
-        Vector3.Angle(camera.forward, pressDirection) < clickAngleThreshold) {
-      // Remove the looper.
-      looperManager.DestroyLooper(this);
     }
   }
 

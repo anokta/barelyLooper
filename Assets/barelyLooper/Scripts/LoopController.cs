@@ -71,13 +71,11 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
                                                  Vector3.Cross(camera.right, direction));
   }
 
-  public void SetAudioClip (float[] originalData, double originalLength, double targetLength, 
-                            int frequency) {
+  public void SetAudioClip (float[] originalData, double length, int frequency) {
     // Fill in the loop data.
-    double originalLengthSamples = (int)(targetLength * frequency);
-    lengthSamples = (int)(targetLength * frequency);
+    lengthSamples = (int)(length * frequency);
     data = new float[lengthSamples];
-    for (int i = 0; i < originalLengthSamples; ++i) {
+    for (int i = 0; i < originalData.Length; ++i) {
       data[i % lengthSamples] = originalData[i];
     }
     // Smoothen both ends.

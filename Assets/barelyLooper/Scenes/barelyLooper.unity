@@ -4026,6 +4026,7 @@ GameObject:
   - 4: {fileID: 2127026302}
   - 114: {fileID: 2127026305}
   - 114: {fileID: 2127026303}
+  - 114: {fileID: 2127026304}
   - 114: {fileID: 2127026301}
   - 114: {fileID: 2127026306}
   m_Layer: 0
@@ -4072,11 +4073,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5a8124079bffac439134eec0786f051, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxLoopLength: 20
   looperPrefab: {fileID: 128718, guid: e4384d047885daf4d88be0d94fe829f3, type: 2}
   recorderPrefab: {fileID: 128718, guid: 60aef34a7bf258043b4c36a62cee8534, type: 2}
+  recorder: {fileID: 2127026304}
   reticle: {fileID: 314224223}
   recordPath: 0
+--- !u!114 &2127026304
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2127026300}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d443af404290b2f48afbebed6f5ad3d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxRecordLength: 30
 --- !u!114 &2127026305
 MonoBehaviour:
   m_ObjectHideFlags: 0

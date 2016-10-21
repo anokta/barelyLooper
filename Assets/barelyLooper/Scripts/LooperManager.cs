@@ -4,14 +4,14 @@ using System.Collections.Generic;
 
 // Class that manages the recording and playback of the loopers.
 public class LooperManager : MonoBehaviour {
-  // Maximum loop length in seconds.
-  public int maxLoopLength = 20;
-
   // Prefab object to instantiate loopers.
   public GameObject looperPrefab;
 
   // Prefab object to instantiate a record indicator object.
   public GameObject recorderPrefab;
+
+  // Mic recorder.
+  public Recorder recorder;
 
   // Reticle to handle gaze based user input.
   public GvrReticle reticle;
@@ -31,8 +31,8 @@ public class LooperManager : MonoBehaviour {
   // Record indicator.
   private RecordController recordVisualizer;
 
-  // Mic recorder.
-  private Recorder recorder;
+  // Input/output latency in seconds.
+  private double outputLatency;
 
   // Playback length in seconds.
   private double playbackLength;
@@ -49,6 +49,9 @@ public class LooperManager : MonoBehaviour {
   // Is currently playing?
   private bool isPlaying;
 
+  // Is currently recording?
+  private bool isRecording;
+
   // Should traced path recorded with the loop?
   public bool recordPath;
 
@@ -57,12 +60,16 @@ public class LooperManager : MonoBehaviour {
     currentLooper = null;
     recordVisualizer = GameObject.Instantiate(recorderPrefab).GetComponent<RecordController>();
     recordVisualizer.Deactivate();
-    recorder = new Recorder(maxLoopLength);
     commandManager = new CommandManager();
+    // Get output latency in samples.
+    int bufferLength = 0, numBuffers = 0;
+    AudioSettings.GetDSPBufferSize(out bufferLength, out numBuffers);
+    outputLatency = (double)numBuffers * bufferLength / AudioSettings.outputSampleRate;
 
     Reset();
 
     isPlaying = true;
+    isRecording = false;
     fixedLength = true;
     recordPath = false;
   }
@@ -78,7 +85,7 @@ public class LooperManager : MonoBehaviour {
   }
 
   void Update () {
-    if (recordPath && recorder.IsRecording) {
+    if (recordPath && isRecording) {
       recordVisualizer.SetTransform(Camera.main.transform);
     }
   }
@@ -149,10 +156,10 @@ public class LooperManager : MonoBehaviour {
       // Skip processing when paused.
       return;
     }
-    if (targetObject == null && !recorder.IsRecording) {
+    if (targetObject == null && !isRecording) {
       // Start recording.
+      isRecording = true;
       recordStartTime = AudioSettings.dspTime;
-      recorder.StartRecording();
       recordVisualizer.SetTransform(Camera.main.transform);
       recordVisualizer.Activate();
       currentLooper = CreateLooper(Camera.main.transform);
@@ -169,10 +176,11 @@ public class LooperManager : MonoBehaviour {
       // Skip processing when paused.
       return;
     }
-    if (recorder.IsRecording) {
+    if (isRecording) {
       // Stop recording.
+      isRecording = false;
       recordEndTime = AudioSettings.dspTime;
-      float[] recordData = recorder.StopRecording();
+      float[] recordData = recorder.GetRecordedData(recordStartTime, recordEndTime);
       recordVisualizer.Deactivate();
       SetLooperData(recordData);      
     }
@@ -186,11 +194,11 @@ public class LooperManager : MonoBehaviour {
     double loopLength = (fixedLength || length < playbackLength) ?
       playbackLength : System.Math.Round(length / playbackLength) * playbackLength;
     // Set the audio clip.
-    currentLooper.SetAudioClip(data, length, loopLength, recorder.frequency);
+    currentLooper.SetAudioClip(data, loopLength, recorder.Frequency);
     // Start the playback.
     double dspTime = AudioSettings.dspTime;
     int playbackOffsetSamples = 
-      (int)(recorder.frequency * (dspTime - (recordStartTime - recorder.outputLatency)));
+      (int)(recorder.Frequency * (dspTime - (recordStartTime - outputLatency)));
     currentLooper.StartPlayback(dspTime, playbackOffsetSamples);
     // Set the loop path.
     if (recordPath) {

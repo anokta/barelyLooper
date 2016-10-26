@@ -11,7 +11,7 @@ public class LooperManager : MonoBehaviour {
   public GameObject recorderPrefab;
 
   // Mic recorder.
-  public Recorder recorder;
+  public MicRecorder recorder;
 
   // Reticle to handle gaze based user input.
   public GvrReticle reticle;
@@ -34,8 +34,11 @@ public class LooperManager : MonoBehaviour {
   // Input/output latency in seconds.
   private double outputLatency;
 
+  // Playback length in samples.
+  private int playbackLengthSamples;
+
   // Playback length in seconds.
-  private double playbackLength;
+  private double playbackStartTime;
 
   // Record absolute start time in seconds.
   private double recordStartTime;
@@ -84,6 +87,14 @@ public class LooperManager : MonoBehaviour {
     reticle.OnGazePointerUp = null;
   }
 
+  void OnApplicationPause (bool pauseStatus) {
+    if (pauseStatus) {
+      Pause();
+    } else {
+      UnPause();
+    }
+  }
+
   void Update () {
     if (recordPath && isRecording) {
       recordVisualizer.SetTransform(Camera.main.transform);
@@ -114,7 +125,7 @@ public class LooperManager : MonoBehaviour {
       Destroy(loopersRoot);
     }
     loopersRoot = new GameObject("Loopers");
-    playbackLength = 0.0;
+    playbackLengthSamples = 0;
   }
 
   // Pauses the playback.
@@ -143,11 +154,11 @@ public class LooperManager : MonoBehaviour {
   }
 
   public void DoubleLength () {
-    playbackLength *= 2.0f;
+    playbackLengthSamples *= 2;
   }
 
   public void HalveLength () {
-    playbackLength *= 0.5f;
+    playbackLengthSamples /= 2;
   }
 
   // Implements |GvrReticle.OnGazePointerDown| callback.
@@ -180,31 +191,39 @@ public class LooperManager : MonoBehaviour {
       // Stop recording.
       isRecording = false;
       recordEndTime = AudioSettings.dspTime;
-      float[] recordData = recorder.GetRecordedData(recordStartTime, recordEndTime);
+      float[] recordData = null;
+      int latencySamples = recorder.GetRecordedData(recordStartTime, recordEndTime, out recordData);
+      SetLooperData(recordData, latencySamples);      
       recordVisualizer.Deactivate();
-      SetLooperData(recordData);      
     }
   }
 
-  private void SetLooperData (float[] data) {
-    double length = recordEndTime - recordStartTime;
+  private void SetLooperData (float[] data, int latencySamples) {
+    int lengthSamples = (int)((recordEndTime - recordStartTime) * recorder.Frequency);
     if (loopers.Count == 1) {
-      playbackLength = length;
+      playbackLengthSamples = lengthSamples;
+      playbackStartTime = recordStartTime;
     }
-    double loopLength = (fixedLength || length < playbackLength) ?
-      playbackLength : System.Math.Round(length / playbackLength) * playbackLength;
+    int loopLengthSamples = 
+      (fixedLength || lengthSamples < playbackLengthSamples) ? playbackLengthSamples : 
+      Mathf.RoundToInt((float)lengthSamples / playbackLengthSamples) * playbackLengthSamples;
     // Set the audio clip.
-    currentLooper.SetAudioClip(data, loopLength, recorder.Frequency);
+    int offsetSamples = 
+      ((int)((recordStartTime - playbackStartTime) * recorder.Frequency)) % playbackLengthSamples;
+    currentLooper.SetAudioClip(data, loopLengthSamples, offsetSamples, recorder.Frequency, 
+                               latencySamples);
     // Start the playback.
-    double dspTime = AudioSettings.dspTime;
+    double dspTime = AudioSettings.dspTime; 
     int playbackOffsetSamples = 
-      (int)(recorder.Frequency * (dspTime - (recordStartTime - outputLatency)));
+      (int)((dspTime - playbackStartTime + outputLatency) * recorder.Frequency);
     currentLooper.StartPlayback(dspTime, playbackOffsetSamples);
     // Set the loop path.
     if (recordPath) {
-      currentLooper.pathRecorder.StopRecording(recordStartTime + length);
-      currentLooper.pathRecorder.path.AddKey((float)(recordStartTime + loopLength),
-                                             currentLooper.pathRecorder.path.GetKey(0));
+      currentLooper.pathRecorder.StopRecording(
+        recordStartTime + (double)lengthSamples / recorder.Frequency);
+      currentLooper.pathRecorder.path.AddKey(
+        (float)(recordStartTime + (double)loopLengthSamples / recorder.Frequency), 
+        currentLooper.pathRecorder.path.GetKey(0));
     }
     currentLooper.GetComponent<Renderer>().enabled = true;
   }

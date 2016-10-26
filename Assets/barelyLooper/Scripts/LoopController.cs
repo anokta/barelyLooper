@@ -22,9 +22,6 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
   // Object distance to camera.
   private float distance;
 
-  // Fade length in samples for each side of the loop.
-  private int fadeLengthSamples;
-
   // Hit transform position.
   private Vector3 pressPosition;
 
@@ -51,7 +48,6 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 
   void Awake () {
     distance = transform.position.z;
-    fadeLengthSamples = 4 * AudioSettings.GetConfiguration().dspBufferSize;
     pauseOffset = 0.0;
   }
 
@@ -71,21 +67,27 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
                                                  Vector3.Cross(camera.right, direction));
   }
 
-  public void SetAudioClip (float[] originalData, double length, int frequency) {
-    // Fill in the loop data.
-    lengthSamples = (int)(length * frequency);
+  public void SetAudioClip (float[] originalData, int loopLengthSamples, int offsetSamples, 
+                            int frequency, int fadeSamples) {
+    lengthSamples = loopLengthSamples;
     data = new float[lengthSamples];
-    for (int i = 0; i < originalData.Length; ++i) {
-      data[i % lengthSamples] = originalData[i];
+    // Fill in the loop data.
+    fadeSamples = Mathf.Min(fadeSamples, lengthSamples);
+    int crossfadeSamples = 2 * fadeSamples;
+    int startPosition = 
+      Mathf.Max(originalData.Length - lengthSamples + fadeSamples, crossfadeSamples);
+    int targetStartPosition = (startPosition - crossfadeSamples + offsetSamples) % lengthSamples; 
+    for(int i = 0; i < originalData.Length - startPosition; ++i) {
+      data[(targetStartPosition + i) % lengthSamples] = originalData[startPosition + i];
     }
-    // Smoothen both ends.
-    // TODO(#28): This is temporary, switch to crossfading for seamless loops.
-    int numFadeSamples = Mathf.Min(fadeLengthSamples, lengthSamples / 2);
-    for (int i = 0; i < numFadeSamples; ++i) {
-      // Half-Hann window.
-      float fade = 0.5f * (1.0f - Mathf.Cos(Mathf.PI * i / numFadeSamples));
-      data[i] *= fade;
-      data[lengthSamples - i - 1] *= fade;
+    // Crossfade the end by Hann window to loop seamlessly.
+    int leftPosition = startPosition - crossfadeSamples;
+    int rightPosition = startPosition - fadeSamples;
+    targetStartPosition += lengthSamples - fadeSamples;
+    for(int i = 0; i < Mathf.Min(lengthSamples, fadeSamples); ++i) {
+      float fade = 0.5f * (1.0f + Mathf.Cos(Mathf.PI * i / fadeSamples));
+      data[(targetStartPosition + i) % lengthSamples] = 
+        fade * originalData[leftPosition + i] + (1.0f - fade) * originalData[rightPosition + i];
     }
     // Set loop data as the new clip.
     source.clip = AudioClip.Create("Loop", lengthSamples, 1, frequency, false);

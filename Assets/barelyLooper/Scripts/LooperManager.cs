@@ -11,7 +11,10 @@ public class LooperManager : MonoBehaviour {
   public GameObject recorderPrefab;
 
   // Mic recorder.
-  public MicRecorder recorder;
+  public MicRecorder micRecorder;
+
+  // Path recorder.
+  public PathRecorder pathRecorder;
 
   // Reticle to handle gaze based user input.
   public GvrReticle reticle;
@@ -67,7 +70,7 @@ public class LooperManager : MonoBehaviour {
     // Get output latency in samples.
     int bufferLength = 0, numBuffers = 0;
     AudioSettings.GetDSPBufferSize(out bufferLength, out numBuffers);
-    outputLatency = (double)numBuffers * bufferLength / AudioSettings.outputSampleRate;
+    outputLatency = (double) numBuffers * bufferLength / AudioSettings.outputSampleRate;
 
     Reset();
 
@@ -168,16 +171,15 @@ public class LooperManager : MonoBehaviour {
       return;
     }
     if (targetObject == null && !isRecording) {
-      // Start recording.
+      // Start mic recording.
       isRecording = true;
       recordStartTime = AudioSettings.dspTime;
       recordVisualizer.SetTransform(Camera.main.transform);
       recordVisualizer.Activate();
       currentLooper = CreateLooper(Camera.main.transform);
-      if (recordPath) {
-        currentLooper.pathRecorder.StartRecording(recordVisualizer.transform, 
-                                                  AudioSettings.dspTime);
-      }
+      // Start path recording.
+      pathRecorder.StartRecording(AudioSettings.dspTime, micRecorder.Frequency, 
+                                  recordVisualizer.transform);
     }
   }
 
@@ -192,39 +194,36 @@ public class LooperManager : MonoBehaviour {
       isRecording = false;
       recordEndTime = AudioSettings.dspTime;
       float[] recordData = null;
-      int latencySamples = recorder.GetRecordedData(recordStartTime, recordEndTime, out recordData);
+      int latencySamples = micRecorder.GetRecordedData(recordStartTime, recordEndTime, 
+                                                       out recordData);
       SetLooperData(recordData, latencySamples);      
       recordVisualizer.Deactivate();
     }
   }
 
   private void SetLooperData (float[] data, int latencySamples) {
-    int lengthSamples = (int)((recordEndTime - recordStartTime) * recorder.Frequency);
+    int lengthSamples = (int) ((recordEndTime - recordStartTime) * micRecorder.Frequency);
     if (loopers.Count == 1) {
       playbackLengthSamples = lengthSamples;
       playbackStartTime = recordStartTime;
     }
     int loopLengthSamples = 
       (fixedLength || lengthSamples < playbackLengthSamples) ? playbackLengthSamples : 
-      Mathf.RoundToInt((float)lengthSamples / playbackLengthSamples) * playbackLengthSamples;
+      Mathf.RoundToInt((float) lengthSamples / playbackLengthSamples) * playbackLengthSamples;
     // Set the audio clip.
     int offsetSamples = 
-      ((int)((recordStartTime - playbackStartTime) * recorder.Frequency)) % playbackLengthSamples;
-    currentLooper.SetAudioClip(data, loopLengthSamples, offsetSamples, recorder.Frequency, 
+      ((int) ((recordStartTime - playbackStartTime) * micRecorder.Frequency)) % playbackLengthSamples;
+    currentLooper.SetAudioClip(data, loopLengthSamples, offsetSamples, micRecorder.Frequency, 
                                latencySamples);
     // Start the playback.
     double dspTime = AudioSettings.dspTime; 
     int playbackOffsetSamples = 
-      (int)((dspTime - playbackStartTime + outputLatency) * recorder.Frequency);
+      (int) ((dspTime - playbackStartTime + outputLatency) * micRecorder.Frequency);
     currentLooper.StartPlayback(dspTime, playbackOffsetSamples);
     // Set the loop path.
-    if (recordPath) {
-      currentLooper.pathRecorder.StopRecording(
-        recordStartTime + (double)lengthSamples / recorder.Frequency);
-      currentLooper.pathRecorder.path.AddKey(
-        (float)(recordStartTime + (double)loopLengthSamples / recorder.Frequency), 
-        currentLooper.pathRecorder.path.GetKey(0));
-    }
+    Path path = pathRecorder.StopRecording(recordEndTime);
+    currentLooper.SetPath(path, loopLengthSamples, offsetSamples, micRecorder.Frequency);
+
     currentLooper.GetComponent<Renderer>().enabled = true;
   }
 }

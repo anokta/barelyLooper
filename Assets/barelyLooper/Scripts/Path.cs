@@ -19,11 +19,8 @@ public class Path {
   public Path() {
     // Three curves needed for X, Y & Z coordinates.
     positionCurves = new AnimationCurve[3];
-    for (int i = 0; i < positionCurves.Length; ++i) {
-      positionCurves[i] = new AnimationCurve();
-      // Loop the path to extend its time frame.
-      positionCurves[i].preWrapMode = WrapMode.Loop;
-      positionCurves[i].postWrapMode = WrapMode.Loop;
+    for (int axis = 0; axis < positionCurves.Length; ++axis) {
+      positionCurves[axis] = new AnimationCurve();
     }
   }
 

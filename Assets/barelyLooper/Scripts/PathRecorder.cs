@@ -3,35 +3,58 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class PathRecorder : MonoBehaviour {
-  public Path path;
+  // Record sample update interval.
+  public double updateInterval = 0.2;
 
-  public bool isRecording;
+  // Next record update time in seconds.
+  private double nextUpdateTime;
 
-  public double recordStartTime;
+  // Record path.
+  private Path recordPath;
 
-  private static double sampleInterval = 0.2;
+  // Record start time in seconds.
+  private double recordStartTime;
 
-  private Transform targetObject;
+  // Target object to record.
+  private Transform recordTarget;
 
-  public void StartRecording (Transform target, double startTime) {
-    targetObject = target;
-    recordStartTime = startTime;
-    isRecording = true;
-    path = new Path();
-    StartCoroutine(CaptureSamplePoints(startTime));
+  // Record sampling frequency.
+  private int samplingFrequency;
+
+  void Awake () {
+    nextUpdateTime = 0.0;
+    recordStartTime = 0.0;
+    recordTarget = null;
+    samplingFrequency = 0;
   }
 
-  public void StopRecording (double stopTime) {
-    isRecording = false;
-    path.AddKey((float)stopTime, targetObject.position);
-  }
-
-  private IEnumerator CaptureSamplePoints (double dspTime) {
-    while (isRecording) {
-      yield return new WaitWhile(() => AudioSettings.dspTime < dspTime);
-
-      path.AddKey((float)dspTime, targetObject.position);
-      dspTime += sampleInterval;
+  void Update () {
+    if (recordTarget != null) {
+      // Check if the next sample point needs to be recorded.
+      double dspTime = AudioSettings.dspTime;
+      if (dspTime >= nextUpdateTime) {
+        // Add the next sample point to the path.
+        recordPath.AddKey((float) ((dspTime - recordStartTime) * samplingFrequency), 
+                          recordTarget.position);
+        nextUpdateTime += updateInterval;
+      }
     }
+  }
+
+  public void StartRecording (double startTime, int frequency, Transform target) {
+    recordPath = new Path();
+    recordStartTime = startTime;
+    nextUpdateTime = recordStartTime;
+    samplingFrequency = frequency;
+    recordTarget = target;
+  }
+
+  public Path StopRecording (double endTime) {
+    // Add the last sample point to the path.
+    recordPath.AddKey((float) ((endTime - recordStartTime) * samplingFrequency), 
+                      recordTarget.position);
+    recordStartTime = 0.0;
+    recordTarget = null;
+    return recordPath;
   }
 }

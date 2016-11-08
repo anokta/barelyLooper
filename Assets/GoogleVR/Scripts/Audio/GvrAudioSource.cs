@@ -249,6 +249,14 @@ public class GvrAudioSource : MonoBehaviour {
     Destroy(audioSource);
   }
 
+  void OnApplicationPause (bool pauseState) {
+    if (pauseState) {
+      Pause();
+    } else {
+      UnPause();
+    }
+  }
+
   void Update () {
     // Update occlusion state.
     if (!occlusionEnabled) {

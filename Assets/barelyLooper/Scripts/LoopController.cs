@@ -14,7 +14,7 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
   private float[] data;
 
   // Path to be traced.
-  private Path path;
+  public Path path;
 
   // Object distance to camera.
   private float distance;
@@ -46,13 +46,13 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 
   void Awake () {
     distance = transform.position.z;
+    path = null;
   }
 
   void Update () { 
     if (path != null) {
-      transform.position = Vector3.Lerp(transform.position, 
-                                        path.Evaluate((float) source.timeSamples),
-                                        Time.deltaTime * 16.0f);
+      transform.position = 
+        SphericalToCartesian(path.Evaluate(source.timeSamples)) + Camera.main.transform.position;
       Vector3 direction = transform.position - Camera.main.transform.position;
       transform.rotation = Quaternion.LookRotation(-direction);
     }
@@ -94,19 +94,18 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 
   public void SetPath (Path originalPath, int lengthSamples, int offsetSamples, int frequency) {
     path = new Path();
-    int endTime = (int) originalPath.GetTime(originalPath.Length - 1);
-    int startTime = Mathf.Max(endTime - lengthSamples, 0);
-    int targetStartTime = (startTime + offsetSamples) % lengthSamples;
 
-    Vector3 startPosition = originalPath.Evaluate((float) startTime);
-    path.AddKey((float) targetStartTime, startPosition);
-    for (int i = 0; i < originalPath.Length; ++i) {
-      int currentTime = (int) originalPath.GetTime(i);
-      if (currentTime > startTime) {
-        path.AddKey((float) ((currentTime + offsetSamples) % lengthSamples), 
-                    originalPath.GetKey(i));
+    int endTimeSamples = originalPath.GetTime(originalPath.NumKeys - 1);
+    int startTimeSamples = Mathf.Max(endTimeSamples - lengthSamples, 0);
+
+    for (int i = 0; i < originalPath.NumKeys; ++i) {
+      int currentTimeSamples = originalPath.GetTime(i);
+      if (currentTimeSamples >= startTimeSamples && currentTimeSamples != endTimeSamples) {
+        path.AddKey((currentTimeSamples + offsetSamples) % lengthSamples, 
+                    CartesianToSpherical(originalPath.GetKey(i) - Camera.main.transform.position));
       }
     }
+    path.SetLengthSamples(lengthSamples);
   }
 
   // Starts loop playback at given dsp |startTime| with |playbackOffsetSamples| offset.
@@ -177,5 +176,29 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     }
     // Drag and drop the looper object.
     SetTransform(eventData.pressEventCamera.transform, pressOffset);
+  }
+
+
+  public static Vector3 SphericalToCartesian (Vector3 spherical) {
+    Vector3 cartesian;
+    float rCosElevation = spherical.x * Mathf.Cos(spherical.z);
+    cartesian.x = rCosElevation * Mathf.Cos(spherical.y);
+    cartesian.y = spherical.x * Mathf.Sin(spherical.z);
+    cartesian.z = rCosElevation * Mathf.Sin(spherical.y);
+    return cartesian;
+  }
+
+  public static Vector3 CartesianToSpherical (Vector3 cartesian) {
+    Vector3 spherical;
+    if (cartesian.x == 0.0f) {
+      cartesian.x = Mathf.Epsilon;
+    }
+    spherical.x = cartesian.magnitude;
+    spherical.y = Mathf.Atan(cartesian.z / cartesian.x);
+    if (cartesian.x < 0.0f) {
+      spherical.y += Mathf.PI;
+    }
+    spherical.z = Mathf.Asin(cartesian.y / spherical.x);
+    return spherical;
   }
 }

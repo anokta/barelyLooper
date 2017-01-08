@@ -33,8 +33,7 @@ public class PathRecorder : MonoBehaviour {
       // Check if the next sample point needs to be recorded.
       double dspTime = AudioSettings.dspTime;
       if (dspTime >= nextUpdateTime) {
-        // Add the next sample point to the path.
-        recordPath.AddKey((float) ((dspTime - recordStartTime) * samplingFrequency), 
+        recordPath.AddKey((int) ((dspTime - recordStartTime) * samplingFrequency), 
                           recordTarget.position);
         nextUpdateTime += updateInterval;
       }
@@ -51,7 +50,7 @@ public class PathRecorder : MonoBehaviour {
 
   public Path StopRecording (double endTime) {
     // Add the last sample point to the path.
-    recordPath.AddKey((float) ((endTime - recordStartTime) * samplingFrequency), 
+    recordPath.AddKey((int) ((endTime - recordStartTime) * samplingFrequency), 
                       recordTarget.position);
     recordStartTime = 0.0;
     recordTarget = null;

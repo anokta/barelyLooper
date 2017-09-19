@@ -1,9 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using GoogleARCore;
 
 // Class that manages the recording and playback of the loopers.
 public class LooperManager : MonoBehaviour {
+  // Main camera.
+  public Camera mainCamera;
+
   // Prefab object to instantiate loopers.
   public GameObject looperPrefab;
 
@@ -15,9 +19,6 @@ public class LooperManager : MonoBehaviour {
 
   // Path recorder.
   public PathRecorder pathRecorder;
-
-  // Reticle to handle gaze based user input.
-  public GvrReticle reticle;
 
   // Command manager.
   public CommandManager commandManager;
@@ -80,16 +81,6 @@ public class LooperManager : MonoBehaviour {
     recordPath = false;
   }
 
-  void OnEnable () {
-    reticle.OnGazePointerDown = OnGazePointerDown;
-    reticle.OnGazePointerUp = OnGazePointerUp;
-  }
-
-  void OnDisable () {
-    reticle.OnGazePointerDown = null;
-    reticle.OnGazePointerUp = null;
-  }
-
   void OnApplicationPause (bool pauseStatus) {
     if (pauseStatus) {
       Pause();
@@ -102,6 +93,7 @@ public class LooperManager : MonoBehaviour {
     if (recordPath && isRecording) {
       recordVisualizer.SetTransform(Camera.main.transform);
     }
+    UpdateArTracker();
   }
 
   // Creates a new looper with respect to the |camera|.
@@ -164,8 +156,57 @@ public class LooperManager : MonoBehaviour {
     playbackLengthSamples /= 2;
   }
 
+  private void UpdateArTracker() {
+    // Do not update if ARCore is not tracking.
+//    if (Session.ConnectionState == SessionConnectionState.DeviceNotSupported) {
+//      Debug.LogError("This device does not support ARCore.");
+//      Application.Quit();
+//    } else if (Session.ConnectionState == SessionConnectionState.UserRejectedNeededPermission) {
+//      Debug.LogError("Camera permission is needed to run this application.");
+//      Application.Quit();
+//    } else if (Session.ConnectionState == SessionConnectionState.ConnectToServiceFailed) {
+//      Debug.LogError("ARCore encountered a problem connecting.  Please start the app again.");
+//      Application.Quit();
+//    }
+//
+    if (Input.touchCount < 1 || 
+        UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) {
+      return;
+    }
+
+//    Touch touch = Input.GetTouch(0);
+//    if (Input.GetMouseButtonDown(1) || touch.phase == TouchPhase.Began) {
+//      OnGazePointerDown(null, Vector3.zero);
+//    } else if (Input.GetMouseButtonUp(1) || touch.phase == TouchPhase.Ended) {
+//      OnGazePointerUp(null);
+//    }
+    Touch touch = Input.GetTouch(0);
+    if (touch.phase == TouchPhase.Began) {
+      TrackableHit hit;
+      TrackableHitFlag raycastFilter = 
+        TrackableHitFlag.PlaneWithinBounds | TrackableHitFlag.PlaneWithinPolygon |
+        TrackableHitFlag.PointCloud | TrackableHitFlag.PointCloud;
+      if (Session.Raycast(mainCamera.ScreenPointToRay(touch.position), raycastFilter, out hit)) {
+        // Create an anchor to allow ARCore to track the hitpoint as understanding of the physical
+        // world evolves.
+        var anchor = Session.CreateAnchor(hit.Point, Quaternion.identity);
+        OnGazePointerDown(null, hit);
+      }
+    } else if (touch.phase == TouchPhase.Ended) {
+//      RaycastHit hit;
+//      bool isHit = Physics.Raycast(mainCamera.ScreenPointToRay(touch.position), 
+//                                   out hit, 100.0f, LayerMask.NameToLayer("Looper"));
+//      GameObject target = null;
+//      if (isHit) {
+//        target = hit.transform.gameObject;
+//      }
+//      OnGazePointerUp(target);
+      OnGazePointerUp(null);
+    }
+  }
+
   // Implements |GvrReticle.OnGazePointerDown| callback.
-  private void OnGazePointerDown (GameObject targetObject) {
+  private void OnGazePointerDown (GameObject targetObject, TrackableHit hit) {
     if (!isPlaying) {
       // Skip processing when paused.
       return;
@@ -174,9 +215,16 @@ public class LooperManager : MonoBehaviour {
       // Start mic recording.
       isRecording = true;
       recordStartTime = AudioSettings.dspTime;
-      recordVisualizer.SetTransform(Camera.main.transform);
+
+      recordVisualizer.transform.position = hit.Point;
       recordVisualizer.Activate();
-      currentLooper = CreateLooper(Camera.main.transform);
+      currentLooper = CreateLooper(mainCamera.transform);
+      currentLooper.transform.position = hit.Point;
+      currentLooper.transform.LookAt(mainCamera.transform);
+      currentLooper.transform.rotation =  
+        Quaternion.Euler(0.0f, currentLooper.transform.rotation.eulerAngles.y, 
+                         currentLooper.transform.rotation.z);
+
       // Start path recording.
       pathRecorder.StartRecording(AudioSettings.dspTime, micRecorder.Frequency, 
                                   recordVisualizer.transform);
@@ -198,6 +246,11 @@ public class LooperManager : MonoBehaviour {
                                                        out recordData);
       SetLooperData(recordData, latencySamples);      
       recordVisualizer.Deactivate();
+//    } else if (targetObject != null) {
+//      LoopController looper = targetObject.GetComponent<LoopController>();
+//      if (looper != null) {
+//        DestroyLooper(looper);
+//      }
     }
   }
 

@@ -49,13 +49,13 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
   }
 
   void Update () { 
-    if (path != null) {
-      transform.position = Vector3.Lerp(transform.position, 
-                                        path.Evaluate((float) source.timeSamples),
-                                        Time.deltaTime * 16.0f);
-      Vector3 direction = transform.position - Camera.main.transform.position;
-      transform.rotation = Quaternion.LookRotation(-direction);
-    }
+//    if (path != null) {
+//      transform.position = Vector3.Lerp(transform.position, 
+//                                        path.Evaluate((float) source.timeSamples),
+//                                        Time.deltaTime * 16.0f);
+//      Vector3 direction = transform.position - Camera.main.transform.position;
+//      transform.rotation = Quaternion.LookRotation(-direction);
+//    }
   }
 
   // Sets the transform of the looper to directly face to the |camera| with given |offset|.
@@ -178,4 +178,13 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     // Drag and drop the looper object.
     SetTransform(eventData.pressEventCamera.transform, pressOffset);
   }
+
+//  void OnAudioFilterRead(float[] data, int channels) {
+//    float average = 0.0f;
+//    for (int i = 0; i < data.Length; i += channels) {
+//      average += Mathf.Abs(data[i]);
+//    }
+//    average /= data.Length;
+//    GetComponent<Light>().range = 0.1f * average;
+//  }
 }

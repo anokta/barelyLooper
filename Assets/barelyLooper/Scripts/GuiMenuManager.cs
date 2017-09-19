@@ -10,28 +10,18 @@ public class GuiMenuManager : MonoBehaviour {
   public Toggle recordPathToggle;
 
   public LooperManager loopManager;
-  public GvrReticle reticle;
+  public GvrReticlePointer reticle;
 
-  void Update () {
-    // Update reticle color.
-    float alpha = reticle.GetComponent<Renderer>().material.color.a;
-    Color reticleColor = recordPathToggle.isOn ? Color.red : Color.black;
-    if (playbackText.text.Equals("Resume")) {
-      reticleColor = Color.gray;
-    }
-    reticleColor.a = alpha;
-    reticle.GetComponent<Renderer>().material.color = reticleColor;
-    // Update VR Mode button.
-    vrModeText.text = "VR Mode: " + (GvrViewer.Instance.VRModeEnabled ? "ON" : "OFF");
-  }
-
-  public void Recenter () {
-    GvrViewer.Instance.Recenter();
-  }
-
-  public void ToggleVrMode () {
-    GvrViewer.Instance.VRModeEnabled = !GvrViewer.Instance.VRModeEnabled;
-  }
+//  void Update () {
+//    // Update reticle color.
+//    float alpha = reticle.GetComponent<Renderer>().material.color.a;
+//    Color reticleColor = recordPathToggle.isOn ? Color.red : Color.black;
+//    if (playbackText.text.Equals("Resume")) {
+//      reticleColor = Color.gray;
+//    }
+//    reticleColor.a = alpha;
+//    reticle.GetComponent<Renderer>().material.color = reticleColor;
+//  }
 
   public void ClearScene () {
     loopManager.Reset();

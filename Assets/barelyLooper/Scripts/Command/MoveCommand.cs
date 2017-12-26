@@ -17,14 +17,14 @@ public class MoveCommand : Command {
     currentRotation = currentRot;
   }
 
-  public void Execute () {
+  public void Execute() {
     if (looper != null) {
       looper.transform.position = currentPosition;
       looper.transform.rotation = currentRotation;
     }
   }
 
-  public void Undo () {
+  public void Undo() {
     if (looper != null) {
       looper.transform.position = previousPosition;
       looper.transform.rotation = previousRotation;

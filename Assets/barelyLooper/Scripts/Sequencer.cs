@@ -35,14 +35,14 @@ public class Sequencer : MonoBehaviour {
     get { return barLength / numBeats; }
   }
 
-  void Awake () {
+  void Awake() {
     currentBar = -1;
     currentBeat = -1;
     barLength = 0.0;
   }
 
   // Starts the sequencer playback.
-  public void Play (double startTime, double barLengthSeconds) {
+  public void Play(double startTime, double barLengthSeconds) {
     if (!IsPlaying) {
       barLength = barLengthSeconds;
       updateCoroutine = UpdateLoop(startTime);
@@ -51,7 +51,7 @@ public class Sequencer : MonoBehaviour {
   }
 
   // Stops the sequencer playback.
-  public void Stop () {  
+  public void Stop() {  
     if (IsPlaying) {
       StopCoroutine(updateCoroutine);
       updateCoroutine = null;
@@ -61,12 +61,12 @@ public class Sequencer : MonoBehaviour {
   }
 
   // Sets the tempo (bpm).
-  public void SetTempo (double tempo) {
+  public void SetTempo(double tempo) {
     barLength = 240.0 / tempo;
   }
 
   // Sequencer update coroutine.
-  private IEnumerator UpdateLoop (double dspTime) {
+  private IEnumerator UpdateLoop(double dspTime) {
     while (IsPlaying) {
       // Wait till next beat.
       yield return new WaitWhile(() => AudioSettings.dspTime < dspTime);

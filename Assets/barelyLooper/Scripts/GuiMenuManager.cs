@@ -12,7 +12,7 @@ public class GuiMenuManager : MonoBehaviour {
   public LooperManager loopManager;
   public GvrReticle reticle;
 
-  void Update () {
+  void Update() {
     // Update reticle color.
     float alpha = reticle.GetComponent<Renderer>().material.color.a;
     Color reticleColor = recordPathToggle.isOn ? Color.red : Color.black;
@@ -25,19 +25,19 @@ public class GuiMenuManager : MonoBehaviour {
     vrModeText.text = "VR Mode: " + (GvrViewer.Instance.VRModeEnabled ? "ON" : "OFF");
   }
 
-  public void Recenter () {
+  public void Recenter() {
     GvrViewer.Instance.Recenter();
   }
 
-  public void ToggleVrMode () {
+  public void ToggleVrMode() {
     GvrViewer.Instance.VRModeEnabled = !GvrViewer.Instance.VRModeEnabled;
   }
 
-  public void ClearScene () {
+  public void ClearScene() {
     loopManager.Reset();
   }
 
-  public void TogglePlayback () {
+  public void TogglePlayback() {
     if (playbackText.text.Equals("Pause")) {
       loopManager.Pause();
       playbackText.text = "Resume";
@@ -47,30 +47,30 @@ public class GuiMenuManager : MonoBehaviour {
     }
   }
 
-  public void ToggleFixedLength () { 
+  public void ToggleFixedLength() { 
     loopManager.ToggleFixedLength();
 
     doubleLengthButton.interactable = fixedLengthToggle.isOn;
     halveLengthButton.interactable = fixedLengthToggle.isOn;
   }
 
-  public void DoubleLength () {
+  public void DoubleLength() {
     loopManager.DoubleLength();
   }
 
-  public void HalveLength () {
+  public void HalveLength() {
     loopManager.HalveLength();
   }
 
-  public void ToggleRecordPath () { 
+  public void ToggleRecordPath() { 
     loopManager.ToggleRecordPath();
   }
 
-  public void Undo () {
+  public void Undo() {
     loopManager.commandManager.Undo();
   }
 
-  public void Redo () {
+  public void Redo() {
     loopManager.commandManager.Redo();
   }
 }

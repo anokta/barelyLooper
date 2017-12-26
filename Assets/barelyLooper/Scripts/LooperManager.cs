@@ -61,7 +61,7 @@ public class LooperManager : MonoBehaviour {
   // Should traced path recorded with the loop?
   public bool recordPath;
 
-  void Awake () {
+  void Awake() {
     loopers = new List<LoopController>();
     currentLooper = null;
     recordVisualizer = GameObject.Instantiate(recorderPrefab).GetComponent<RecordController>();
@@ -80,17 +80,17 @@ public class LooperManager : MonoBehaviour {
     recordPath = false;
   }
 
-  void OnEnable () {
+  void OnEnable() {
     reticle.OnGazePointerDown = OnGazePointerDown;
     reticle.OnGazePointerUp = OnGazePointerUp;
   }
 
-  void OnDisable () {
+  void OnDisable() {
     reticle.OnGazePointerDown = null;
     reticle.OnGazePointerUp = null;
   }
 
-  void OnApplicationPause (bool pauseStatus) {
+  void OnApplicationPause(bool pauseStatus) {
     if (pauseStatus) {
       Pause();
     } else {
@@ -98,14 +98,14 @@ public class LooperManager : MonoBehaviour {
     }
   }
 
-  void Update () {
+  void Update() {
     if (recordPath && isRecording) {
       recordVisualizer.SetTransform(Camera.main.transform);
     }
   }
 
   // Creates a new looper with respect to the |camera|.
-  public LoopController CreateLooper (Transform camera) {
+  public LoopController CreateLooper(Transform camera) {
     LoopController looper = GameObject.Instantiate(looperPrefab).GetComponent<LoopController>();
     looper.transform.parent = loopersRoot.transform;
     looper.GetComponent<Renderer>().enabled = false;
@@ -116,13 +116,13 @@ public class LooperManager : MonoBehaviour {
   }
 
   // Destroys the game object of given |looper|.
-  public void DestroyLooper (LoopController looper) {
+  public void DestroyLooper(LoopController looper) {
     loopers.Remove(looper);
     GameObject.Destroy(looper.gameObject);
   }
 
   // Clears the scene.
-  public void Reset () {
+  public void Reset() {
     loopers.Clear();
     if (loopersRoot != null) {
       Destroy(loopersRoot);
@@ -132,7 +132,7 @@ public class LooperManager : MonoBehaviour {
   }
 
   // Pauses the playback.
-  public void Pause () {
+  public void Pause() {
     for (int i = 0; i < loopers.Count; ++i) {
       loopers[i].PausePlayback();
     }
@@ -140,7 +140,7 @@ public class LooperManager : MonoBehaviour {
   }
 
   // Resumes the playback.
-  public void UnPause () {
+  public void UnPause() {
     for (int i = 0; i < loopers.Count; ++i) {
       loopers[i].UnPausePlayback();
     }
@@ -148,24 +148,24 @@ public class LooperManager : MonoBehaviour {
   }
 
   // Toggles fixed length recording.
-  public void ToggleFixedLength () {
+  public void ToggleFixedLength() {
     fixedLength = !fixedLength;
   }
 
-  public void ToggleRecordPath () {
+  public void ToggleRecordPath() {
     recordPath = !recordPath;
   }
 
-  public void DoubleLength () {
+  public void DoubleLength() {
     playbackLengthSamples *= 2;
   }
 
-  public void HalveLength () {
+  public void HalveLength() {
     playbackLengthSamples /= 2;
   }
 
   // Implements |GvrReticle.OnGazePointerDown| callback.
-  private void OnGazePointerDown (GameObject targetObject) {
+  private void OnGazePointerDown(GameObject targetObject) {
     if (!isPlaying) {
       // Skip processing when paused.
       return;
@@ -184,7 +184,7 @@ public class LooperManager : MonoBehaviour {
   }
 
   // Implements |GvrReticle.OnGazePointerUp| callback.
-  private void OnGazePointerUp (GameObject targetObject) {
+  private void OnGazePointerUp(GameObject targetObject) {
     if (!isPlaying) {
       // Skip processing when paused.
       return;
@@ -201,7 +201,7 @@ public class LooperManager : MonoBehaviour {
     }
   }
 
-  private void SetLooperData (float[] data, int latencySamples) {
+  private void SetLooperData(float[] data, int latencySamples) {
     int lengthSamples = (int) ((recordEndTime - recordStartTime) * micRecorder.Frequency);
     if (loopers.Count == 1) {
       playbackLengthSamples = lengthSamples;
@@ -221,7 +221,7 @@ public class LooperManager : MonoBehaviour {
       (int) ((dspTime - playbackStartTime + outputLatency) * micRecorder.Frequency);
     currentLooper.StartPlayback(dspTime, playbackOffsetSamples);
     // Set the loop path.
-    Path path = pathRecorder.StopRecording(recordEndTime);
+    LooperPath path = pathRecorder.StopRecording(recordEndTime);
     currentLooper.SetPath(path, loopLengthSamples, offsetSamples, micRecorder.Frequency);
 
     currentLooper.GetComponent<Renderer>().enabled = true;

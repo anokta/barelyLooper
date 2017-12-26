@@ -14,7 +14,7 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
   private float[] data;
 
   // Path to be traced.
-  private Path path;
+  private LooperPath path;
 
   // Object distance to camera.
   private float distance;
@@ -44,11 +44,11 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
   private double pathStartTime, pathEndTime;
   private int pathOffsetSamples;
 
-  void Awake () {
+  void Awake() {
     distance = transform.position.z;
   }
 
-  void Update () { 
+  void Update() { 
     if (path != null) {
       transform.position = Vector3.Lerp(transform.position, 
                                         path.Evaluate((float) source.timeSamples),
@@ -59,14 +59,14 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
   }
 
   // Sets the transform of the looper to directly face to the |camera| with given |offset|.
-  public void SetTransform (Transform camera, Vector3 offset) {
+  public void SetTransform(Transform camera, Vector3 offset) {
     Vector3 direction = distance * camera.forward + camera.rotation * offset;
     transform.position = camera.position + direction;
     transform.rotation = Quaternion.LookRotation(-direction,
                                                  Vector3.Cross(camera.right, direction));
   }
 
-  public void SetAudioClip (float[] originalData, int lengthSamples, int offsetSamples, 
+  public void SetAudioClip(float[] originalData, int lengthSamples, int offsetSamples, 
                             int frequency, int fadeSamples) {
     data = new float[lengthSamples];
     // Fill in the loop data.
@@ -92,8 +92,8 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     source.clip.SetData(data, 0);
   }
 
-  public void SetPath (Path originalPath, int lengthSamples, int offsetSamples, int frequency) {
-    path = new Path();
+  public void SetPath(LooperPath originalPath, int lengthSamples, int offsetSamples, int frequency) {
+    path = new LooperPath();
     int endTime = (int) originalPath.GetTime(originalPath.Length - 1);
     int startTime = Mathf.Max(endTime - lengthSamples, 0);
     int targetStartTime = (startTime + offsetSamples) % lengthSamples;
@@ -110,27 +110,27 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
   }
 
   // Starts loop playback at given dsp |startTime| with |playbackOffsetSamples| offset.
-  public void StartPlayback (double startTime, int playbackOffsetSamples) {
+  public void StartPlayback(double startTime, int playbackOffsetSamples) {
     source.timeSamples = playbackOffsetSamples % source.clip.samples;
     source.PlayScheduled(startTime);
   }
 
   // Pauses loop playback.
-  public void PausePlayback () {
+  public void PausePlayback() {
     if (source.isPlaying) {
       source.Pause();
     }
   }
 
   // Un-pauses loop playback.
-  public void UnPausePlayback () {
+  public void UnPausePlayback() {
     if (!source.isPlaying) {
       source.UnPause();
     }
   }
 
   // Implements |IPointerDownHandler.OnPointerDown| callback.
-  public void OnPointerDown (PointerEventData eventData) {
+  public void OnPointerDown(PointerEventData eventData) {
     pressTime = Time.time;
     Transform camera = eventData.pressEventCamera.transform;
     pressDirection = camera.forward;
@@ -149,7 +149,7 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
   }
 
   // Implements |IPointerUpHandler.OnPointerUp| callback.
-  public void OnPointerUp (PointerEventData eventData) {
+  public void OnPointerUp(PointerEventData eventData) {
     Transform camera = eventData.pressEventCamera.transform;
     if (Time.time < pressTime + clickTimeThreshold &&
         Vector3.Angle(camera.forward, pressDirection) < clickAngleThreshold) {
@@ -158,7 +158,7 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     } else { 
       if (looperManager.recordPath && path == null) {
         pathEndTime = AudioSettings.dspTime;
-        Path recordPath = looperManager.pathRecorder.StopRecording(pathEndTime);
+        LooperPath recordPath = looperManager.pathRecorder.StopRecording(pathEndTime);
         SetPath(recordPath, source.clip.samples, pathOffsetSamples, source.clip.frequency);
       }
       // Add move command to the manager.
@@ -171,7 +171,7 @@ public class LoopController : MonoBehaviour, IPointerDownHandler, IPointerUpHand
   }
 
   // Implements |IDragHandler.OnDrag| callback.
-  public void OnDrag (PointerEventData eventData) {
+  public void OnDrag(PointerEventData eventData) {
     if (!source.isPlaying) {
       return;
     }

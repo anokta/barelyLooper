@@ -2,7 +2,7 @@
 using System.Collections;
 
 // Class that stores a curved path structure.
-public class Path {
+public class LooperPath {
   // Number of keyframes in path.
   public int Length {
     get { 
@@ -16,7 +16,7 @@ public class Path {
   // Animation curve per each transform axis.
   private AnimationCurve[] positionCurves;
 
-  public Path() {
+  public LooperPath() {
     // Three curves needed for X, Y & Z coordinates.
     positionCurves = new AnimationCurve[3];
     for (int axis = 0; axis < positionCurves.Length; ++axis) {
@@ -25,20 +25,20 @@ public class Path {
   }
 
   // Adds keyframe |position| at given |time|.
-  public void AddKey (float time, Vector3 position) {
+  public void AddKey(float time, Vector3 position) {
     positionCurves[0].AddKey(time, position.x);
     positionCurves[1].AddKey(time, position.y);
     positionCurves[2].AddKey(time, position.z);
   }
 
   // Returns the keyframe at given |index|.
-  public Vector3 GetKey (int index) {
+  public Vector3 GetKey(int index) {
     return new Vector3(positionCurves[0].keys[index].value, positionCurves[1].keys[index].value,
                        positionCurves[2].keys[index].value);
   }
 
   // Returns the time at given |index|.
-  public float GetTime (int index) {
+  public float GetTime(int index) {
     return positionCurves[0].keys[index].time;
   }
 
@@ -50,7 +50,7 @@ public class Path {
   }
 
   // Returns the interpolated position at specified |time|.
-  public Vector3 Evaluate (float time) {
+  public Vector3 Evaluate(float time) {
     return new Vector3(positionCurves[0].Evaluate(time), positionCurves[1].Evaluate(time), 
                        positionCurves[2].Evaluate(time));
   }

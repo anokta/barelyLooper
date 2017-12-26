@@ -20,13 +20,13 @@ public class CommandManager {
     redos = new Stack<Command>();
   }
 
-  public void ExecuteCommand (Command command) {
+  public void ExecuteCommand(Command command) {
     command.Execute();
     undos.Push(command);
     redos.Clear();
   }
 
-  public void Undo () {
+  public void Undo() {
     if (IsUndoAvailable) {
       Command command = undos.Pop();
       command.Undo();
@@ -34,7 +34,7 @@ public class CommandManager {
     }
   }
 
-  public void Redo () {
+  public void Redo() {
     if (IsRedoAvailable) {
       Command command = redos.Pop();
       command.Execute();

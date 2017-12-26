@@ -26,7 +26,7 @@ public class MicRecorder : MonoBehaviour {
   // Initial start time in seconds.
   private double initialStartTime;
 
-  void Awake () {
+  void Awake() {
     // Get maximum recording sampling rate of the mic.
     int minFrequency = 0, maxFrequency = 0;
     Microphone.GetDeviceCaps(null, out minFrequency, out maxFrequency);
@@ -36,17 +36,17 @@ public class MicRecorder : MonoBehaviour {
     recordData = new float[recordLengthSamples];
   }
 
-  void OnEnable () {
+  void OnEnable() {
     // Start recording in the background.
     StartRecording();
   }
 
-  void OnDisable () {
+  void OnDisable() {
     // Stop recording on shutdown.
     StopRecording();
   }
 
-  void OnApplicationPause (bool pauseStatus) {
+  void OnApplicationPause(bool pauseStatus) {
     if (pauseStatus) {
       StopRecording();
     } else {
@@ -61,13 +61,13 @@ public class MicRecorder : MonoBehaviour {
   // @param endtime Record end time in seconds.
   // @param data Record data to be filled in.
   // @return Current record latency in samples.
-  public int GetRecordedData (double startTime, double endTime, out float[] data) {
+  public int GetRecordedData(double startTime, double endTime, out float[] data) {
     // Calculate the recording latency.
-    int elapsedSamples = (int)((endTime - initialStartTime) * recordFrequency);
+    int elapsedSamples = (int) ((endTime - initialStartTime) * recordFrequency);
     int currentPosition = Microphone.GetPosition(null);
     int latencySamples = (elapsedSamples - currentPosition) % recordLengthSamples;
     // Initialize the record data.
-    int lengthSamples = (int)((endTime - startTime) * recordFrequency) + latencySamples;
+    int lengthSamples = (int) ((endTime - startTime) * recordFrequency) + latencySamples;
     lengthSamples = Mathf.Min(lengthSamples, recordLengthSamples); 
     data = new float[lengthSamples];
     // Compute the start position relative to the cursor offset with |latencySamples|.
@@ -83,7 +83,7 @@ public class MicRecorder : MonoBehaviour {
   }
 
   // Starts the mic recording with |maxRecordLength|.
-  private void StartRecording () {
+  private void StartRecording() {
     if (!Microphone.IsRecording(null)) {
       initialStartTime = AudioSettings.dspTime;
       recordClip = Microphone.Start(null, true, maxRecordLength, recordFrequency);
@@ -91,7 +91,7 @@ public class MicRecorder : MonoBehaviour {
   }
 
   // Stops the mic recording.
-  private void StopRecording () {
+  private void StopRecording() {
     if (Microphone.IsRecording(null)) {
       Microphone.End(null);
     }

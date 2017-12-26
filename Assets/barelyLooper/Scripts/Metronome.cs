@@ -12,16 +12,16 @@ public class Metronome : MonoBehaviour {
   // Audio clips for metronome clicks.
   public AudioClip clickAccent, clickDefault;
 
-  void OnEnable () {
+  void OnEnable() {
     sequencer.OnNextBeat += OnNextBeat;
   }
 
-  void OnDisable () {
+  void OnDisable() {
     sequencer.OnNextBeat -= OnNextBeat;
   }
 
   // Implements |Sequencer.OnNextBeat| callback.
-  void OnNextBeat (int bar, int beat, double dspTime) {
+  void OnNextBeat(int bar, int beat, double dspTime) {
     if (beat == 0) {
       source.clip = clickAccent;
     } else {

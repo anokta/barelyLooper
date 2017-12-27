@@ -62,6 +62,9 @@ public class DaydreamInput : InputBase {
         }
       }
     }
+    // Update pointer position.
+//    inputPointer.localPosition = GvrController.Orientation * Vector3.forward;
+    inputPointer.localRotation = GvrController.Orientation;
     // Call base process.
     base.Process();
   }

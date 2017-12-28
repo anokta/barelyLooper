@@ -16,8 +16,8 @@ public class LooperManager : MonoBehaviour {
   // Path recorder.
   public PathRecorder pathRecorder;
 
-  // Reticle to handle gaze based user input.
-  public GvrReticle reticle;
+//  // Reticle to handle gaze based user input.
+//  public GvrReticle reticle;
 
   // Command manager.
   public CommandManager commandManager;
@@ -80,15 +80,15 @@ public class LooperManager : MonoBehaviour {
     recordPath = false;
   }
 
-  void OnEnable() {
-    reticle.OnGazePointerDown = OnGazePointerDown;
-    reticle.OnGazePointerUp = OnGazePointerUp;
-  }
-
-  void OnDisable() {
-    reticle.OnGazePointerDown = null;
-    reticle.OnGazePointerUp = null;
-  }
+//  void OnEnable() {
+//    reticle.OnGazePointerDown = OnGazePointerDown;
+//    reticle.OnGazePointerUp = OnGazePointerUp;
+//  }
+//
+//  void OnDisable() {
+//    reticle.OnGazePointerDown = null;
+//    reticle.OnGazePointerUp = null;
+//  }
 
   void OnApplicationPause(bool pauseStatus) {
     if (pauseStatus) {

@@ -44,14 +44,14 @@ public class DaydreamInput : InputBase {
   }
 
   protected override void Process() {
-    if (!(GvrController.ClickButtonDown && GvrController.ClickButtonUp &&
-        GvrController.ClickButton)) {
+    if (!(GvrControllerInput.ClickButtonDown && GvrControllerInput.ClickButtonUp &&
+          GvrControllerInput.ClickButton)) {
       // Update touchpad swipe state.
-      if (GvrController.TouchDown) {
-        swipeStartPosition = GvrController.TouchPos;
+      if (GvrControllerInput.TouchDown) {
+        swipeStartPosition = GvrControllerInput.TouchPos;
         swipeStartTime = Time.time;
-      } else if (GvrController.TouchUp) {
-        Vector2 swipeDeltaPosition = GvrController.TouchPos - swipeStartPosition;
+      } else if (GvrControllerInput.TouchUp) {
+        Vector2 swipeDeltaPosition = GvrControllerInput.TouchPos - swipeStartPosition;
         float swipeDeltaTime = Time.time - swipeStartTime;
 
         Vector2 swipeVelocity = swipeDeltaPosition / swipeDeltaTime;
@@ -62,9 +62,6 @@ public class DaydreamInput : InputBase {
         }
       }
     }
-    // Update pointer position.
-//    inputPointer.localPosition = GvrController.Orientation * Vector3.forward;
-    inputPointer.localRotation = GvrController.Orientation;
     // Call base process.
     base.Process();
   }
@@ -78,17 +75,17 @@ public class DaydreamInput : InputBase {
       case Trigger.Build:
       case Trigger.Interact:
         if (trigger == currentTrigger) {
-          if (GvrController.ClickButtonDown) {
+          if (GvrControllerInput.ClickButtonDown) {
             return TriggerState.Pressed;
-          } else if (GvrController.ClickButtonUp) {
+          } else if (GvrControllerInput.ClickButtonUp) {
             return TriggerState.Released;
-          } else if (GvrController.ClickButton) {
+          } else if (GvrControllerInput.ClickButton) {
             return TriggerState.Held;
           }
         }
         break;
       case Trigger.PlayPause:
-        if (GvrController.AppButtonUp) {
+        if (GvrControllerInput.AppButtonUp) {
           return TriggerState.Released;
         } 
         break;

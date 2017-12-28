@@ -3,14 +3,13 @@ using UnityEngine.UI;
 using System.Collections;
 
 public class GuiMenuManager : MonoBehaviour {
-  public Text vrModeText;
   public Text playbackText;
   public Toggle fixedLengthToggle;
   public Button halveLengthButton, doubleLengthButton;
   public Toggle recordPathToggle;
 
   public LooperManager loopManager;
-  public GvrReticle reticle;
+  public Renderer reticle;
 
   void Update() {
     // Update reticle color.
@@ -20,17 +19,7 @@ public class GuiMenuManager : MonoBehaviour {
       reticleColor = Color.gray;
     }
     reticleColor.a = alpha;
-    reticle.GetComponent<Renderer>().material.color = reticleColor;
-    // Update VR Mode button.
-    vrModeText.text = "VR Mode: " + (GvrViewer.Instance.VRModeEnabled ? "ON" : "OFF");
-  }
-
-  public void Recenter() {
-    GvrViewer.Instance.Recenter();
-  }
-
-  public void ToggleVrMode() {
-    GvrViewer.Instance.VRModeEnabled = !GvrViewer.Instance.VRModeEnabled;
+    reticle.material.color = reticleColor;
   }
 
   public void ClearScene() {
